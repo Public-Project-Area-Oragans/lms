@@ -4,7 +4,8 @@ AI 기반 적응형 학습 관리 시스템 + 개인 학습 인프라.
 
 ## 🔗 링크
 
-- 🎮 **인터랙티브 스토리보드**: https://public-project-area-oragans.github.io/lms/storyboard.html
+- 🎮 **인터랙티브 스토리보드**: https://public-project-area-oragans.github.io/lms/storyboard/storyboard.html
+  - 배포 브랜치: `doc/storyboard` · 소스 경로: `/storyboard/`
 - 📖 **문서 Wiki**: https://github.com/Public-Project-Area-Oragans/lms/wiki
 
 ## 📦 구성
@@ -26,12 +27,17 @@ AI 기반 적응형 학습 관리 시스템 + 개인 학습 인프라.
 
 ## 📑 문서 구조
 
-`docs/`는 GitHub Pages 배포용 정적 자산을 담습니다. 개발 문서 원본은 Wiki에서 관리됩니다.
+개발 문서 원본은 Wiki에서 관리하며, GitHub Pages 배포용 정적 자산은 **`doc/storyboard` 브랜치의 `storyboard/` 폴더**에 분리 보관합니다.
 
 ```
-docs/
-├── index.html       # Pages 랜딩 (storyboard로 자동 이동)
-└── storyboard.html  # 인터랙티브 화면 스토리보드 (27 화면)
+doc/storyboard 브랜치:
+└── storyboard/
+    ├── index.html       # Pages 랜딩 (storyboard.html로 자동 이동)
+    └── storyboard.html  # 인터랙티브 화면 스토리보드 (27 화면)
+
+main 브랜치:
+└── README.md            # 이 파일
+    (실제 애플리케이션 코드가 추가될 예정)
 ```
 
 ## 🗓 마일스톤

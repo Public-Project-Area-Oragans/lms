@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LearnFlow AI v5.0 — 인터랙티브 스토리보드</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap");
+:root{--color-bg:#0d1117;--color-surface:#161b22;--color-border:#21262d;--color-border-light:#30363d;--color-text:#c9d1d9;--color-text-dim:#8b949e;--color-text-bright:#f0f6fc;--color-link:#58a6ff;--font-sans:"Noto Sans KR",sans-serif;--font-mono:"Fira Code","Consolas",monospace;--slide-width:960px;--slide-height:540px;--role-color:#64748b;--role-bg:#1e293b;--role-text:#f1f5f9}
+html,body{width:100%;height:100%;overflow:hidden;background:#010409;font-family:var(--font-sans);color:var(--color-text)}
+[data-role="ROLE_LEARNER"]{--role-color:#3fb950;--role-bg:#0d2818;--role-text:#a7f3d0}
+[data-role="ROLE_INSTRUCTOR"]{--role-color:#f59e0b;--role-bg:#451a03;--role-text:#fde68a}
+[data-role="ROLE_ADMIN"]{--role-color:#58a6ff;--role-bg:#0c2d6b;--role-text:#bfdbfe}
+.presentation{width:100vw;height:100vh;display:grid;place-items:center;background:#010409}
+.slides{width:var(--slide-width);height:var(--slide-height);display:grid;transform:scale(var(--slide-scale,1));transform-origin:center center;overflow:hidden;position:relative}
+.slide{grid-area:1/1;width:100%;height:100%;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;background:var(--color-bg);overflow:hidden}
+.slide.active{opacity:1;visibility:visible;z-index:1}
+.title-slide{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#0d1117 0%,#161b22 40%,#1a1f35 100%)}
+.title-slide h1{font-size:36px;font-weight:900;background:linear-gradient(135deg,#58a6ff,#3fb950);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.title-slide .subtitle{font-size:16px;color:var(--color-text-dim);margin-bottom:20px}
+.title-slide .meta-info{display:flex;gap:16px;font-size:12px;color:var(--color-text-dim)}
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.tag-blue{background:rgba(88,166,255,.15);color:#58a6ff}
+.tag-green{background:rgba(63,185,80,.15);color:#3fb950}
+.tag-purple{background:rgba(188,140,255,.15);color:#bc8cff}
+.tag-yellow{background:rgba(210,153,34,.15);color:#d29922}
+.info-slide{display:flex;flex-direction:column;padding:24px 36px;overflow:hidden}
+.info-slide h2{font-size:20px;font-weight:700;color:var(--color-text-bright);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--color-border)}
+.info-slide h3{font-size:13px;font-weight:600;color:var(--color-link);margin:10px 0 6px}
+.info-table{width:100%;border-collapse:collapse;font-size:11px}
+.info-table th{background:var(--color-surface);color:var(--color-link);padding:5px 8px;text-align:left;font-weight:600;border-bottom:1px solid var(--color-border-light)}
+.info-table td{padding:4px 8px;border-bottom:1px solid var(--color-border);color:var(--color-text)}
+.role-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.sb-slide{display:grid;grid-template-rows:44px 32px 1fr;grid-template-areas:"header" "badges" "main"}
+.slide-header{grid-area:header;background:var(--role-bg);border-bottom:2px solid var(--role-color);display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:var(--role-text);font-size:12px;font-weight:600}
+.header-screen-id{font-size:11px;opacity:.7;background:rgba(255,255,255,.08);padding:2px 8px;border-radius:10px}
+.slide-badges{grid-area:badges;display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--color-surface);border-bottom:1px solid var(--color-border);overflow:hidden}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.badge-method{background:#1a3a1a;color:#4ade80;border:1px solid #166534}
+.badge-template{background:#1a2a3a;color:#93c5fd;border:1px solid #1e40af}
+.badge-access{background:var(--role-bg);color:var(--role-text);border:1px solid var(--role-color)}
+.method-label{font-family:var(--font-mono);font-weight:700}
+.method-get{color:#61affe}.method-post{color:#49cc90}.method-put{color:#fca130}.method-delete{color:#f93e3e}.method-patch{color:#50e3c2}
+.slide-main{grid-area:main;display:grid;grid-template-columns:3fr 2fr;overflow:hidden}
+.journey-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0}
+.journey-node{background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--color-text);text-align:center;min-width:70px}
+.journey-node.start{border-color:#3fb950;color:#3fb950;font-weight:700}
+.journey-arrow{color:var(--color-text-dim);font-size:14px}
+.role-filter{position:fixed;top:8px;right:8px;z-index:100;display:flex;gap:4px;background:rgba(22,27,34,.95);padding:4px 8px;border-radius:8px;border:1px solid var(--color-border)}
+.role-filter-btn{padding:3px 10px;border-radius:6px;border:1px solid var(--color-border-light);background:transparent;color:var(--color-text-dim);font-size:10px;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:all .15s}
+.role-filter-btn:hover{background:var(--color-surface)}
+.role-filter-btn.active{background:var(--color-border-light);color:var(--color-text-bright)}
+.progress-bar{position:fixed;bottom:0;left:0;width:100%;height:3px;background:rgba(255,255,255,.05);z-index:100}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#58a6ff,#3fb950);transition:width .3s ease}
+.slide-counter{position:fixed;bottom:8px;right:12px;z-index:100;font-size:11px;color:var(--color-text-dim);font-family:var(--font-mono)}
+.toc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.toc-overlay.visible{opacity:1;pointer-events:auto}
+.toc-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--color-surface);color:var(--color-text);overflow-y:auto;z-index:1000;padding:1.5rem;transform:translateX(-100%);transition:transform .25s ease;border-right:1px solid var(--color-border)}
+.toc-sidebar.toc-open{transform:translateX(0)}
+.toc-title{font-size:14px;font-weight:700;color:var(--color-text-bright);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+#toc-list{list-style:none}
+.toc-set-header{font-size:10px;font-weight:700;color:var(--color-link);text-transform:uppercase;letter-spacing:.1em;padding:10px 0 4px;margin-top:4px;border-top:1px solid var(--color-border)}
+.toc-set-header:first-child{border-top:none;margin-top:0}
+.toc-item{padding:5px 8px;font-size:11px;cursor:pointer;border-radius:4px;transition:background .1s;display:flex;align-items:center;gap:8px}
+.toc-item:hover{background:var(--color-border)}
+.toc-item.active{background:rgba(88,166,255,.12);color:var(--color-link)}
+.toc-role-badge{font-size:9px;padding:1px 5px;border-radius:8px;background:var(--color-border);color:var(--color-text-dim);font-weight:600}
+.help-overlay{position:fixed;inset:0;z-index:3000;background:rgba(1,4,9,.92);display:none;place-items:center}
+.help-overlay.show{display:grid}
+.help-box{background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:12px;padding:28px 36px;max-width:500px;width:90%}
+.help-box h2{font-size:18px;color:var(--color-text-bright);margin-bottom:14px}
+.help-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-border);font-size:12px}
+.help-key{display:inline-block;background:var(--color-border);padding:2px 8px;border-radius:4px;font-family:var(--font-mono);font-size:11px;color:var(--color-text-bright)}
+
+/* ═══ 목업 ═══ */
+.slide-mockup{background:#0d1117;border-right:1px solid var(--color-border);overflow:hidden;padding:8px;display:flex;flex-direction:column;font-size:10px;color:var(--color-text-dim);position:relative}
+.mock-browser{border:1px solid var(--color-border-light);border-radius:6px;overflow:hidden;flex:1;display:flex;flex-direction:column}
+.mock-browser-bar{background:var(--color-surface);padding:4px 8px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--color-border-light)}
+.mock-browser-dots{display:flex;gap:3px}
+.mock-browser-dots span{width:6px;height:6px;border-radius:50%;background:var(--color-border-light)}
+.mock-browser-url{flex:1;background:var(--color-bg);border-radius:3px;padding:2px 6px;font-size:8px;color:var(--color-link);font-family:var(--font-mono)}
+.mock-browser-body{flex:1;padding:6px;overflow:hidden}
+.mock-navbar{background:var(--color-surface);padding:4px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-border-light);font-size:9px;margin-bottom:6px;border-radius:3px}
+.mock-navbar-brand{color:var(--color-text-bright);font-weight:700}
+.mock-navbar-links{display:flex;gap:8px}
+.mock-navbar-links span{color:var(--color-text-dim);cursor:default}
+.mock-navbar-links span.active{color:var(--role-color,#58a6ff);font-weight:600}
+.mock-search-bar{display:flex;gap:4px;margin-bottom:6px}
+.mock-search-input{flex:1;padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px}
+.mock-table{width:100%;border-collapse:collapse;font-size:8px;margin:4px 0}
+.mock-table th{background:var(--color-surface);color:var(--color-link);padding:3px 6px;text-align:left;border-bottom:1px solid var(--color-border-light);font-weight:600}
+.mock-table td{padding:3px 6px;border-bottom:1px solid var(--color-border);color:var(--color-text-dim)}
+.mock-table tr:hover td{background:rgba(88,166,255,.04)}
+.mock-pagination{display:flex;gap:2px;justify-content:center;margin-top:4px}
+.mock-pagination span{display:inline-block;width:16px;height:16px;text-align:center;line-height:16px;font-size:7px;border-radius:3px;background:var(--color-border);color:var(--color-text-dim)}
+.mock-pagination span.active{background:var(--role-color,#58a6ff);color:#fff}
+.mock-form-group{margin-bottom:5px}
+.mock-form-label{display:block;font-size:8px;color:var(--color-text-dim);margin-bottom:1px}
+.mock-form-input{width:100%;padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px}
+.mock-form-textarea{width:100%;padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px;min-height:40px;resize:none}
+.mock-form-select{padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px}
+.mock-btn{display:inline-block;padding:2px 8px;border-radius:3px;font-size:8px;font-weight:600;border:1px solid var(--color-border-light);cursor:default}
+.mock-btn-primary{background:var(--role-color,#58a6ff);color:#fff;border-color:transparent}
+.mock-btn-outline{background:transparent;color:var(--color-text-dim)}
+.mock-btn-danger{background:#da3633;color:#fff;border-color:transparent}
+.mock-btn-warning{background:#d29922;color:#fff;border-color:transparent}
+.mock-status{display:inline-block;padding:1px 5px;border-radius:8px;font-size:7px;font-weight:600}
+.mock-status-todo{background:#21262d;color:#8b949e}
+.mock-status-doing{background:rgba(210,153,34,.15);color:#d29922}
+.mock-status-done{background:rgba(63,185,80,.15);color:#3fb950}
+.mock-status-fail{background:rgba(248,113,113,.15);color:#f87171}
+.mock-card{background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:4px;padding:6px;margin-bottom:4px}
+.mock-card-title{font-size:9px;font-weight:600;color:var(--color-text-bright)}
+.mock-card-text{font-size:8px;color:var(--color-text-dim);margin-top:2px}
+.mock-annotation{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--role-color,#58a6ff);color:#fff;font-size:7px;font-weight:700;position:absolute;z-index:10;box-shadow:0 0 0 2px rgba(0,0,0,.5)}
+.mock-detail-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--color-border)}
+.mock-detail-title{font-size:12px;font-weight:700;color:var(--color-text-bright)}
+.mock-detail-row{display:flex;gap:12px;font-size:8px;margin-bottom:3px}
+.mock-detail-label{color:var(--color-text-dim);min-width:50px}
+.mock-detail-value{color:var(--color-text)}
+.mock-detail-content{background:var(--color-bg);border:1px solid var(--color-border);border-radius:4px;padding:6px;margin-top:6px;font-size:9px;color:var(--color-text);line-height:1.5;min-height:50px}
+.mock-btn-group{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.mock-mobile-frame{width:150px;border:2px solid var(--color-border-light);border-radius:16px;padding:18px 4px 14px;background:var(--color-bg);position:relative;margin:0 auto}
+.mock-mobile-frame::before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:2px;background:var(--color-border-light)}
+.mock-mobile-frame .mock-screen{width:100%;min-height:180px;overflow:hidden;border-radius:4px;padding:4px;background:var(--color-surface)}
+
+/* ═══ 커스텀 ═══ */
+.course-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:6px;font-size:8px;display:flex;gap:6px;margin-bottom:4px;cursor:pointer;transition:all .15s}
+.course-card:hover{border-color:var(--role-color);transform:translateY(-1px)}
+.course-thumb{width:40px;height:28px;background:linear-gradient(135deg,#58a6ff,#3fb950);border-radius:3px;flex-shrink:0}
+.course-meta{flex:1}
+.course-title{font-size:9px;color:var(--color-text-bright);font-weight:600}
+.course-desc{font-size:7px;color:var(--color-text-dim);margin-top:1px}
+.course-badges{display:flex;gap:3px;margin-top:2px}
+
+.chat-bubble{max-width:75%;padding:5px 8px;border-radius:8px;font-size:8px;margin-bottom:4px;line-height:1.4}
+.chat-bubble.user{background:var(--role-color,#3fb950);color:#fff;margin-left:auto}
+.chat-bubble.bot{background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border-light)}
+.chat-ref{background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);border-radius:3px;padding:3px 5px;margin-top:3px;font-size:7px;color:#93c5fd}
+
+.flash-card-view{background:linear-gradient(135deg,#161b22 0%,#1a1f35 100%);border:1px solid var(--color-border-light);border-radius:6px;padding:10px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:10px;color:var(--color-text-bright);margin-bottom:6px;position:relative}
+.flash-meta{position:absolute;top:4px;right:4px;font-size:6px;color:var(--color-text-dim)}
+.flash-quality-row{display:flex;gap:4px;justify-content:center;margin-top:4px}
+.flash-q-btn{padding:3px 8px;border-radius:4px;font-size:7px;font-weight:700;cursor:pointer;border:none;color:#fff}
+.flash-q-0{background:#da3633}.flash-q-3{background:#d29922}.flash-q-4{background:#58a6ff}.flash-q-5{background:#3fb950}
+.flash-progress{display:flex;align-items:center;gap:4px;font-size:7px;color:var(--color-text-dim);margin-top:4px}
+.flash-bar{flex:1;height:3px;background:var(--color-border);border-radius:2px;overflow:hidden}
+.flash-bar-fill{height:100%;background:linear-gradient(90deg,#58a6ff,#3fb950);width:70%}
+
+.graph-canvas{background:#0a0d13;border:1px solid var(--color-border);border-radius:4px;min-height:200px;position:relative;overflow:hidden}
+.graph-node{position:absolute;width:24px;height:24px;border-radius:50%;background:var(--role-color,#3fb950);color:#fff;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;box-shadow:0 0 8px rgba(63,185,80,.4)}
+.graph-node.secondary{background:#58a6ff;box-shadow:0 0 8px rgba(88,166,255,.4)}
+.graph-node.tertiary{background:#bc8cff;box-shadow:0 0 8px rgba(188,140,255,.4)}
+.graph-edge{position:absolute;height:1px;background:var(--color-border-light);transform-origin:left center}
+.graph-stat{position:absolute;bottom:4px;left:4px;font-size:7px;color:var(--color-text-dim);background:rgba(0,0,0,.5);padding:2px 6px;border-radius:3px}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.dash-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:6px;font-size:8px}
+.dash-card-title{font-size:7px;color:var(--color-text-dim);text-transform:uppercase;margin-bottom:3px}
+.dash-card-value{font-size:14px;color:var(--color-text-bright);font-weight:700}
+.dash-card-trend{font-size:7px;margin-top:2px}
+.dash-trend-up{color:#3fb950}
+.dash-trend-down{color:#f87171}
+
+.heatmap{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin:4px 0}
+.heatmap-cell{aspect-ratio:1;background:#21262d;border-radius:1px}
+.heatmap-cell.l1{background:#0e4429}
+.heatmap-cell.l2{background:#006d32}
+.heatmap-cell.l3{background:#26a641}
+.heatmap-cell.l4{background:#39d353}
+
+.wiki-link{color:#bc8cff;background:rgba(188,140,255,.1);padding:0 3px;border-radius:2px;cursor:pointer}
+.wiki-link.unresolved{color:#f87171;text-decoration:underline dashed;background:rgba(248,113,113,.05)}
+
+/* ═══ 패널 ═══ */
+.slide-panel{display:flex;flex-direction:column;overflow-y:auto;background:var(--color-bg);scrollbar-width:thin;scrollbar-color:#475569 transparent}
+.slide-panel::-webkit-scrollbar{width:6px}
+.slide-panel::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
+.panel-section{border-bottom:1px solid var(--color-border)}
+.panel-section-header{list-style:none;display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--role-color);cursor:pointer;user-select:none;background:var(--color-surface)}
+.panel-section-header::-webkit-details-marker{display:none}
+.panel-section-header::after{content:"▸";margin-left:auto;font-size:8px;transition:transform .2s ease}
+.panel-section[open]>.panel-section-header::after{transform:rotate(90deg)}
+.panel-section-body{padding:8px 12px;font-size:11px;line-height:1.6;color:var(--color-text-dim)}
+.panel-section[open] .panel-section-body{animation:panel-slide-down .15s ease-out}
+@keyframes panel-slide-down{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.action-table,.error-table,.valid-table{width:100%;border-collapse:collapse;font-size:10px}
+.action-table th,.error-table th,.valid-table th{background:#0f172a;color:#64748b;font-size:9px;text-transform:uppercase;letter-spacing:.05em;padding:4px 6px;text-align:left;border-bottom:1px solid #334155}
+.action-table td,.error-table td,.valid-table td{padding:3px 6px;border-bottom:1px solid #1e293b}
+.action-table code{font-size:9px;color:#7dd3fc;font-family:var(--font-mono)}
+.method-badge{display:inline-block;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:700;font-family:var(--font-mono);min-width:28px;text-align:center;color:#fff}
+.method-badge.get{background:#61affe}.method-badge.post{background:#49cc90}.method-badge.put{background:#fca130}.method-badge.delete{background:#f93e3e}.method-badge.patch{background:#50e3c2}
+.status-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;font-family:var(--font-mono)}
+.status-401{background:#fef3c7;color:#92400e}
+.status-403{background:#fee2e2;color:#991b1b}
+.status-404{background:#e0e7ff;color:#3730a3}
+.status-409{background:#ffedd5;color:#9a3412}
+.status-429{background:#fce7f3;color:#9d174d}
+.status-500{background:#f3e8ff;color:#6b21a8}
+.vm-tree,.vm-tree ul{list-style:none;margin:0;padding:0 0 0 1em;position:relative;font-size:10px;font-family:var(--font-mono)}
+.vm-tree ul::before{content:"";position:absolute;left:.3em;top:0;bottom:.5em;border-left:1px solid #334155}
+.vm-node{position:relative;padding:2px 0 2px .7em;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.vm-node::before{content:"";position:absolute;left:-.7em;top:.6em;width:.7em;border-top:1px solid #334155}
+.vm-key{color:#7dd3fc;font-weight:600}
+.vm-type{color:#86efac;font-style:italic}
+.vm-node--object>.vm-key::before{content:"▾ ";color:#f59e0b}
+.valid-field{color:#7dd3fc;font-family:var(--font-mono);font-weight:600}
+.valid-error{color:#f87171;font-size:9px}
+.rule-tag{display:inline-block;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:600;font-family:var(--font-mono);margin-right:2px}
+.rule-required{background:#fef2f2;color:#dc2626}
+.rule-max{background:#eff6ff;color:#2563eb}
+.rule-min{background:#f0fdf4;color:#16a34a}
+.rule-format{background:#fefce8;color:#a16207}
+.perm-row{background:#0f172a;color:#94a3b8;font-size:10px;padding:6px;margin-top:6px;border-radius:4px}
+.perm-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;background:#7c3aed;color:#fff;margin-right:4px}
+
+/* ═══ 인터랙티브 ═══ */
+.sim-mode-badge{position:fixed;bottom:8px;left:12px;z-index:100;font-size:10px;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);padding:2px 8px;border-radius:10px;font-weight:600}
+[data-action]{cursor:pointer;transition:all .15s ease}
+[data-action]:hover{filter:brightness(1.2)}
+[data-action]:active{transform:scale(.97)}
+.sim-input{width:100%;padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px;font-family:var(--font-sans);outline:none;transition:border-color .15s}
+.sim-input:focus{border-color:var(--role-color,#58a6ff);box-shadow:0 0 0 1px var(--role-color,#58a6ff)}
+.sim-input.sim-invalid{border-color:#f87171;box-shadow:0 0 0 1px #f87171}
+.sim-select{padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px;font-family:var(--font-sans);outline:none;cursor:pointer}
+.sim-textarea{width:100%;padding:3px 6px;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:3px;color:var(--color-text);font-size:8px;font-family:var(--font-sans);min-height:40px;resize:none;outline:none}
+.sim-textarea:focus{border-color:var(--role-color,#58a6ff);box-shadow:0 0 0 1px var(--role-color,#58a6ff)}
+.sim-error-msg{font-size:7px;color:#f87171;margin-top:1px;display:none}
+.sim-invalid~.sim-error-msg{display:block}
+tr[data-action]{cursor:pointer}
+tr[data-action]:hover td{background:rgba(88,166,255,.08)}
+.sim-modal-overlay{position:absolute;inset:0;background:rgba(1,4,9,.8);display:none;place-items:center;z-index:50}
+.sim-modal-overlay.sim-show{display:grid}
+.sim-modal{background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:8px;padding:14px 18px;max-width:280px;width:85%;animation:sim-modal-in .2s ease-out}
+@keyframes sim-modal-in{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.sim-modal-title{font-size:11px;font-weight:700;color:var(--color-text-bright);margin-bottom:8px}
+.sim-modal-body{font-size:9px;color:var(--color-text-dim);margin-bottom:12px;line-height:1.5}
+.sim-modal-actions{display:flex;gap:6px;justify-content:flex-end}
+.sim-toast-container{position:absolute;top:50px;right:8px;z-index:60;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.sim-toast{background:#1a7f37;color:#fff;padding:6px 12px;border-radius:6px;font-size:9px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.4);animation:sim-toast-in .25s ease-out,sim-toast-out .3s ease-in 2.2s forwards;pointer-events:auto}
+.sim-toast.sim-toast-error{background:#da3633}
+@keyframes sim-toast-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes sim-toast-out{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+</style>
+</head>
+<body>
+<div class="presentation">
+<div class="slides">
+
+<!-- ═══ 00. TITLE ═══ -->
+<section class="slide title-slide active" data-role="ALL" data-id="00" data-set="intro" id="slide-1">
+  <h1>LearnFlow AI v5.0</h1>
+  <p class="subtitle">AI 기반 적응형 학습 관리 + 개인 학습 인프라 — 인터랙티브 스토리보드</p>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;justify-content:center;max-width:680px;">
+    <span class="tag tag-blue">Spring Boot 4</span>
+    <span class="tag tag-green">React 18</span>
+    <span class="tag tag-purple">Flutter 3.x</span>
+    <span class="tag tag-yellow">Claude API</span>
+    <span class="tag tag-blue">pgvector</span>
+    <span class="tag tag-green">SM-2 + Bloom</span>
+  </div>
+  <div class="meta-info">
+    <span>작성일: 2026-04-22</span>
+    <span>총 27 화면</span>
+    <span>🎮 인터랙티브 모드</span>
+  </div>
+  <p style="font-size:11px;color:var(--color-text-dim);margin-top:24px;">
+    <span class="help-key" style="background:#21262d;padding:1px 6px;border-radius:3px;">?</span> 키로 단축키 도움말
+    &nbsp;·&nbsp;
+    <span class="help-key" style="background:#21262d;padding:1px 6px;border-radius:3px;">T</span> 목차
+    &nbsp;·&nbsp;
+    <span class="help-key" style="background:#21262d;padding:1px 6px;border-radius:3px;">→</span> 다음
+  </p>
+</section>
+
+<!-- ═══ 01. 역할 정의 ═══ -->
+<section class="slide info-slide" data-role="ALL" data-id="01" data-set="intro" id="slide-2">
+  <h2>역할 정의</h2>
+  <table class="info-table">
+    <thead><tr><th>역할명</th><th>Role 상수</th><th>색상</th><th>주요 책임</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="role-dot" style="background:#3fb950;"></span>학습자</td>
+        <td><code>ROLE_LEARNER</code></td>
+        <td style="color:#3fb950;">#3fb950</td>
+        <td>강의 수강, AI 튜터, 퀴즈, 노트 작성, 카드 복습</td>
+      </tr>
+      <tr>
+        <td><span class="role-dot" style="background:#f59e0b;"></span>강사</td>
+        <td><code>ROLE_INSTRUCTOR</code></td>
+        <td style="color:#f59e0b;">#f59e0b</td>
+        <td>강의 관리, AI 퀴즈 생성, 수동 검토, 수강생 분석</td>
+      </tr>
+      <tr>
+        <td><span class="role-dot" style="background:#58a6ff;"></span>관리자</td>
+        <td><code>ROLE_ADMIN</code></td>
+        <td style="color:#58a6ff;">#58a6ff</td>
+        <td>AI 품질 관리, FinOps, 프롬프트 관리, A/B 테스트</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 style="margin-top:16px;">🔐 인증 / 권한</h3>
+  <div style="font-size:11px;color:var(--color-text);line-height:1.7;">
+    · JWT(access 30min + refresh 14d) 기반 stateless 인증<br>
+    · Spring Security + 역할 기반 <code>@PreAuthorize</code><br>
+    · 개인 노트/카드는 <strong>PostgreSQL Row-Level Security</strong>로 DB 레벨 이중 방어
+  </div>
+</section>
+
+<!-- ═══ 02. 화면 목록 ═══ -->
+<section class="slide info-slide" data-role="ALL" data-id="02" data-set="intro" id="slide-3">
+  <h2>화면 목록 (총 27)</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:10px;">
+    <div>
+      <h3 style="color:#3fb950;">학습자 (LEARNER) · 16</h3>
+      <div style="line-height:1.8;">
+        · 04 로그인 · 05 회원가입<br>
+        · 06 온보딩 진단<br>
+        · 07 강의 목록 · 08 강의 상세 · 09 레슨 뷰어<br>
+        · 10 AI 튜터 (노트 Long-term Memory)<br>
+        · 11 퀴즈 응시 · 12 결과/이의제기<br>
+        · 13 플래시카드 덱 · <strong>14 복습 화면</strong> · 15 카드 편집 · 16 복습 통계<br>
+        · 17 노트 목록 · <strong>18 노트 에디터</strong> · <strong>19 지식 그래프</strong><br>
+        · 20 모바일 퀵 캡처<br>
+        · 21 학습 대시보드
+      </div>
+    </div>
+    <div>
+      <h3 style="color:#f59e0b;">강사 (INSTRUCTOR) · 2</h3>
+      <div style="line-height:1.8;">
+        · 22 강의 관리<br>
+        · 23 Review Queue (AI 채점 검수)
+      </div>
+      <h3 style="color:#58a6ff;margin-top:10px;">관리자 (ADMIN) · 3</h3>
+      <div style="line-height:1.8;">
+        · 24 AI 품질 대시보드<br>
+        · 25 FinOps 대시보드<br>
+        · 26 Knowledge 대시보드 (v5.0)
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:14px;font-size:10px;color:var(--color-text-dim);">
+    🎮 인터랙티브 플로우: 로그인→진단→강의→레슨→튜터→퀴즈→복습→노트→그래프 전 과정 클릭 이동 가능
+  </p>
+</section>
+
+<!-- ═══ 03. 사용자 여정도 ═══ -->
+<section class="slide info-slide" data-role="ALL" data-id="03" data-set="intro" id="slide-4">
+  <h2>사용자 여정도 — 학습자의 하루</h2>
+  <h3>🌅 아침 · 복습</h3>
+  <div class="journey-flow">
+    <div class="journey-node start">로그인</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">홈 대시보드</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">오늘의 복습<br>(23장)</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">SM-2 반영</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">연속 7일 🔥</div>
+  </div>
+  <h3 style="margin-top:10px;">🏫 오전 · 학습</h3>
+  <div class="journey-flow">
+    <div class="journey-node start">레슨 재생</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">모르는 개념<br>AI 튜터 질문</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">내 노트 참조<br>(Long-term)</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">노트 작성<br>[[위키링크]]</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">카드 자동생성</div>
+  </div>
+  <h3 style="margin-top:10px;">🌙 저녁 · 자투리</h3>
+  <div class="journey-flow">
+    <div class="journey-node start">지하철</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">Flutter 앱<br>(오프라인)</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">카드 복습</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">퀵 노트 캡처</div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-node">온라인 복구<br>자동 동기화</div>
+  </div>
+  <p style="margin-top:14px;padding:8px;background:rgba(88,166,255,.08);border-left:2px solid #58a6ff;font-size:10px;line-height:1.6;">
+    💡 <strong>데이터 플라이휠</strong>: 노트 작성 → 카드 생성 → 복습 → concept_mastery 갱신 →
+    AI 튜터가 다음 질문 시 "당신이 2주 전 정리한 노트에도…"라고 응답 품질 향상
+  </p>
+</section>
+
+<!-- ═══ 04. 로그인 ═══ -->
+<section class="slide sb-slide" data-role="ALL" data-id="04" data-set="auth" id="slide-5">
+  <header class="slide-header"><span class="header-title">LearnFlow AI | 로그인</span><span class="header-screen-id">화면 04</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/auth/login</span>
+    <span class="badge badge-template">web/auth/login</span>
+    <span class="badge badge-access">🌐 PUBLIC</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/login</div></div>
+        <div class="mock-browser-body" style="display:flex;align-items:center;justify-content:center;">
+          <div style="width:260px;padding:14px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:6px;">
+            <div style="text-align:center;font-size:14px;font-weight:900;background:linear-gradient(135deg,#58a6ff,#3fb950);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;">LearnFlow AI</div>
+            <div class="mock-form-group"><label class="mock-form-label">이메일 *</label><input class="sim-input" required placeholder="name@example.com"><div class="sim-error-msg">이메일을 입력하세요</div></div>
+            <div class="mock-form-group"><label class="mock-form-label">비밀번호 *</label><input class="sim-input" type="password" required placeholder="••••••••"><div class="sim-error-msg">비밀번호를 입력하세요</div></div>
+            <div style="display:flex;justify-content:space-between;font-size:7px;margin:4px 0;"><span style="color:var(--color-text-dim);">□ 자동 로그인</span><span style="color:#58a6ff;cursor:pointer;">비밀번호 찾기</span></div>
+            <span class="mock-btn mock-btn-primary" style="width:100%;text-align:center;display:block;padding:5px;" data-action="goto:slide-7">로그인</span>
+            <div style="text-align:center;font-size:7px;color:var(--color-text-dim);margin-top:8px;">계정이 없으신가요? <span style="color:#58a6ff;cursor:pointer;" data-action="goto:slide-6">회원가입</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s5" open><summary class="panel-section-header">🎯 액션 정의</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>로그인</td><td><span class="method-badge post">POST</span> <code>/auth/login</code></td><td>JWT 발급 → 홈</td></tr><tr><td>회원가입</td><td>-</td><td>→ 05 회원가입</td></tr><tr><td>자동로그인</td><td>Refresh 쿠키</td><td>14일 유지</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s5"><summary class="panel-section-header">🚨 오류 처리</summary><div class="panel-section-body"><table class="error-table"><tr><th>코드</th><th>상황</th><th>처리</th></tr><tr><td><span class="status-badge status-401">401</span></td><td>자격 증명 오류</td><td>"이메일/비밀번호 확인"</td></tr><tr><td><span class="status-badge status-429">429</span></td><td>Rate Limit</td><td>"잠시 후 재시도" + Retry-After</td></tr><tr><td><span class="status-badge status-500">500</span></td><td>서버 오류</td><td>토스트 + 재시도 버튼</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s5"><summary class="panel-section-header">📦 View Model</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">LoginRequest</span><ul><li class="vm-node"><span class="vm-key">email</span><span class="vm-type">string</span></li><li class="vm-node"><span class="vm-key">password</span><span class="vm-type">string</span></li><li class="vm-node"><span class="vm-key">remember</span><span class="vm-type">boolean</span></li></ul></li><li class="vm-node vm-node--object"><span class="vm-key">LoginResponse</span><ul><li class="vm-node"><span class="vm-key">access_token</span><span class="vm-type">JWT</span></li><li class="vm-node"><span class="vm-key">refresh_token</span><span class="vm-type">JWT</span></li><li class="vm-node"><span class="vm-key">user.role</span><span class="vm-type">enum</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s5"><summary class="panel-section-header">🔐 유효성 / 권한</summary><div class="panel-section-body"><table class="valid-table"><tr><th>필드</th><th>규칙</th><th>오류</th></tr><tr><td><span class="valid-field">email</span></td><td><span class="rule-tag rule-required">required</span><span class="rule-tag rule-format">email</span></td><td class="valid-error">이메일 형식</td></tr><tr><td><span class="valid-field">password</span></td><td><span class="rule-tag rule-required">required</span><span class="rule-tag rule-min">min:8</span></td><td class="valid-error">8자 이상</td></tr></table><div class="perm-row"><span class="perm-badge">PUBLIC</span>인증 없이 접근 가능</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 05. 회원가입 ═══ -->
+<section class="slide sb-slide" data-role="ALL" data-id="05" data-set="auth" id="slide-6">
+  <header class="slide-header"><span class="header-title">LearnFlow AI | 회원가입</span><span class="header-screen-id">화면 05</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/auth/signup</span>
+    <span class="badge badge-template">web/auth/signup</span>
+    <span class="badge badge-access">🌐 PUBLIC</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/signup</div></div>
+        <div class="mock-browser-body" style="display:flex;align-items:center;justify-content:center;">
+          <div style="width:260px;padding:12px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:6px;">
+            <div style="font-size:11px;font-weight:700;color:var(--color-text-bright);margin-bottom:8px;">회원가입</div>
+            <div class="mock-form-group"><label class="mock-form-label">이메일 *</label><input class="sim-input" required placeholder="name@example.com"><div class="sim-error-msg">필수 · 이메일 형식</div></div>
+            <div class="mock-form-group"><label class="mock-form-label">비밀번호 * (8자+)</label><input class="sim-input" type="password" required placeholder="대소문자+숫자+기호 3종"><div class="sim-error-msg">필수</div></div>
+            <div class="mock-form-group"><label class="mock-form-label">비밀번호 확인 *</label><input class="sim-input" type="password" required><div class="sim-error-msg">일치 필요</div></div>
+            <div class="mock-form-group"><label class="mock-form-label">닉네임</label><input class="sim-input" placeholder="표시 이름"></div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin:4px 0;">☑ 이용약관 · 개인정보처리방침 동의</div>
+            <div class="mock-btn-group"><span class="mock-btn mock-btn-outline" data-action="goto:slide-5">취소</span><span class="mock-btn mock-btn-primary" style="flex:1;text-align:center;" data-action="toast:이메일 인증 링크 발송">가입</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s6" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>가입</td><td><span class="method-badge post">POST</span> <code>/auth/signup</code></td><td>이메일 인증 링크 발송</td></tr><tr><td>취소</td><td>-</td><td>→ 04 로그인</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s6"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-409">409</span></td><td>이메일 중복</td><td>"이미 가입된 이메일"</td></tr><tr><td><span class="status-badge" style="background:#fee2e2;color:#991b1b;">400</span></td><td>Validation</td><td>필드별 오류 표시</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s6"><summary class="panel-section-header">📦 View Model</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">SignupRequest</span><ul><li class="vm-node"><span class="vm-key">email</span><span class="vm-type">string</span></li><li class="vm-node"><span class="vm-key">password</span><span class="vm-type">string</span></li><li class="vm-node"><span class="vm-key">nickname</span><span class="vm-type">string?</span></li><li class="vm-node"><span class="vm-key">terms_agreed</span><span class="vm-type">boolean</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s6"><summary class="panel-section-header">🔐 유효성</summary><div class="panel-section-body"><table class="valid-table"><tr><td><span class="valid-field">email</span></td><td><span class="rule-tag rule-required">required</span><span class="rule-tag rule-format">email</span></td><td class="valid-error">형식</td></tr><tr><td><span class="valid-field">password</span></td><td><span class="rule-tag rule-min">min:8</span><span class="rule-tag rule-format">복합</span></td><td class="valid-error">대소문자+숫자+기호 3종</td></tr><tr><td><span class="valid-field">confirm</span></td><td><span class="rule-tag rule-required">match</span></td><td class="valid-error">비밀번호 불일치</td></tr></table></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 06. 온보딩 진단 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="06" data-set="onboarding" id="slide-7">
+  <header class="slide-header"><span class="header-title">온보딩 | 진단 테스트</span><span class="header-screen-id">화면 06</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/onboarding/diagnostic/:id</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/onboarding/diagnostic/:id/submit</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/onboarding/diagnostic/spring-101</div></div>
+        <div class="mock-browser-body">
+          <div style="font-size:11px;font-weight:700;color:var(--color-text-bright);">진단 테스트 · Spring Boot 입문</div>
+          <div style="font-size:8px;color:var(--color-text-dim);margin-bottom:6px;">문제 3/10 · 예상 5분 · Bloom 분포: REMEMBER 30% / UNDERSTAND 40% / APPLY 30%</div>
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:8px;margin-bottom:6px;">
+            <div style="font-size:9px;color:var(--color-text-bright);margin-bottom:6px;">Q3. JPA의 1차 캐시 범위는?</div>
+            <label style="display:block;font-size:8px;margin:2px 0;"><input type="radio" name="q3"> ① EntityManager 단위</label>
+            <label style="display:block;font-size:8px;margin:2px 0;"><input type="radio" name="q3"> ② EntityManagerFactory 전체</label>
+            <label style="display:block;font-size:8px;margin:2px 0;"><input type="radio" name="q3"> ③ JVM 프로세스</label>
+            <label style="display:block;font-size:8px;margin:2px 0;"><input type="radio" name="q3"> ④ 모르겠어요</label>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:7px;color:var(--color-text-dim);">
+            <div style="flex:1;height:4px;background:var(--color-border);border-radius:2px;overflow:hidden;"><div style="height:100%;width:30%;background:linear-gradient(90deg,#58a6ff,#3fb950);"></div></div>
+            <span>3 / 10</span>
+          </div>
+          <div class="mock-btn-group" style="margin-top:6px;"><span class="mock-btn mock-btn-outline">← 이전</span><span class="mock-btn mock-btn-primary" data-action="toast:진단 결과 분석 중...">다음 →</span><span class="mock-btn" style="background:#7c3aed;color:#fff;border:none;" data-action="goto:slide-8">건너뛰고 자가진단</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s7" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>문항 로드</td><td><span class="method-badge get">GET</span> <code>/onboarding/diagnostic/:id</code></td><td>10문항 + Bloom 분포</td></tr><tr><td>제출</td><td><span class="method-badge post">POST</span> <code>/submit</code></td><td>diagnosed_level + 로드맵</td></tr><tr><td>자가진단</td><td>-</td><td>대체 경로 → 강의 목록</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s7"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-404">404</span></td><td>진단 없음</td><td>"자가진단 제공"</td></tr><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">422</span></td><td>답 누락</td><td>필수 문항 강조</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s7"><summary class="panel-section-header">📦 View Model</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">DiagnosticResult</span><ul><li class="vm-node"><span class="vm-key">diagnosed_level</span><span class="vm-type">enum</span></li><li class="vm-node"><span class="vm-key">concept_scores</span><span class="vm-type">Map&lt;concept,score&gt;</span></li><li class="vm-node"><span class="vm-key">confidence_weight</span><span class="vm-type">float 0~1</span></li><li class="vm-node"><span class="vm-key">recommended_path</span><span class="vm-type">lesson_id[]</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s7"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge">LEARNER</span>로그인 후 1회 진행 (건너뛸 수 있음)</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 07. 강의 목록 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="07" data-set="course" id="slide-8">
+  <header class="slide-header"><span class="header-title">강의 | 목록</span><span class="header-screen-id">화면 07</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/courses</span>
+    <span class="badge badge-template">web/course/list</span>
+    <span class="badge badge-access">🌐 PUBLIC</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/courses?category=backend</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">LearnFlow</span><div class="mock-navbar-links"><span class="active">강의</span><span data-action="goto:slide-14">카드</span><span data-action="goto:slide-18">노트</span><span data-action="goto:slide-22">내 학습</span></div></div>
+          <div class="mock-search-bar"><select class="sim-select" style="width:70px;"><option>전체</option><option>Backend</option><option>Frontend</option></select><input class="sim-input" placeholder="강의 검색..." style="flex:1;"><span class="mock-btn mock-btn-primary" data-action="toast:검색 결과 12건">검색</span></div>
+          <div class="course-card" data-action="goto:slide-9"><div class="course-thumb"></div><div class="course-meta"><div class="course-title">Spring Boot 입문부터 실전까지</div><div class="course-desc">이수민 강사 · 42강 · ⭐ 4.8</div><div class="course-badges"><span class="tag tag-blue" style="font-size:6px;padding:1px 4px;">초급</span><span class="tag tag-green" style="font-size:6px;padding:1px 4px;">JPA</span></div></div></div>
+          <div class="course-card" data-action="toast:수강 신청 완료"><div class="course-thumb" style="background:linear-gradient(135deg,#bc8cff,#f59e0b);"></div><div class="course-meta"><div class="course-title">실전 마이크로서비스 아키텍처</div><div class="course-desc">김아키 강사 · 28강 · ⭐ 4.6</div><div class="course-badges"><span class="tag tag-yellow" style="font-size:6px;padding:1px 4px;">고급</span><span class="tag tag-purple" style="font-size:6px;padding:1px 4px;">MSA</span></div></div></div>
+          <div class="course-card" data-action="goto:slide-9"><div class="course-thumb" style="background:linear-gradient(135deg,#3fb950,#58a6ff);"></div><div class="course-meta"><div class="course-title">React 18 + TypeScript 마스터</div><div class="course-desc">박프론트 강사 · 35강 · ⭐ 4.7</div></div></div>
+          <div class="mock-pagination"><span class="active">1</span><span>2</span><span>3</span><span>…</span><span>12</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s8" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>목록 조회</td><td><span class="method-badge get">GET</span> <code>/courses</code></td><td>페이지네이션</td></tr><tr><td>검색</td><td><span class="method-badge get">GET</span> <code>?q=&category=</code></td><td>ES hybrid search</td></tr><tr><td>카드 클릭</td><td>-</td><td>→ 08 강의 상세</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s8"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-500">500</span></td><td>ES 단절</td><td>DB fallback + 배너</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s8"><summary class="panel-section-header">📦 View Model</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">CourseListItem</span><ul><li class="vm-node"><span class="vm-key">id</span><span class="vm-type">number</span></li><li class="vm-node"><span class="vm-key">title</span><span class="vm-type">string</span></li><li class="vm-node"><span class="vm-key">instructor</span><span class="vm-type">User</span></li><li class="vm-node"><span class="vm-key">avg_rating</span><span class="vm-type">number</span></li><li class="vm-node"><span class="vm-key">level</span><span class="vm-type">enum</span></li><li class="vm-node"><span class="vm-key">lesson_count</span><span class="vm-type">number</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s8"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge">PUBLIC</span>비로그인도 목록 조회. 수강 신청은 LEARNER 권한 필요</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 08. 강의 상세 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="08" data-set="course" id="slide-9">
+  <header class="slide-header"><span class="header-title">강의 | 상세 & 수강</span><span class="header-screen-id">화면 08</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/courses/:id</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/courses/:id/enroll</span>
+    <span class="badge badge-access">🌐 PUBLIC (등록은 LEARNER)</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/courses/42</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-detail-header"><span class="mock-detail-title">Spring Boot 입문부터 실전까지</span><span class="mock-status mock-status-done" style="font-size:9px;">⭐ 4.8 (312)</span></div>
+          <div class="mock-detail-row"><span class="mock-detail-label">강사</span><span class="mock-detail-value">이수민 · 5년 경력</span></div>
+          <div class="mock-detail-row"><span class="mock-detail-label">난이도</span><span class="mock-detail-value">초급 · 42강 · 약 28시간</span></div>
+          <div class="mock-detail-row"><span class="mock-detail-label">Bloom</span><span class="mock-detail-value">REMEMBER 25% · UNDERSTAND 40% · APPLY 35%</span></div>
+          <div class="mock-detail-content">Spring Boot 3.x 기반으로 JPA, Security, Web MVC를 다루는 실무형 커리큘럼. REST API 설계와 N+1, Transaction Propagation까지 심도 있게 학습합니다.</div>
+          <div style="margin-top:6px;">
+            <div style="font-size:9px;color:var(--color-text-bright);font-weight:600;margin-bottom:3px;">섹션</div>
+            <div style="font-size:8px;color:var(--color-text-dim);line-height:1.7;">① 환경 설정 & 기초 (8강)<br>② JPA와 영속성 컨텍스트 (12강) <span class="mock-status mock-status-doing" style="font-size:6px;">진행중 3/12</span><br>③ Web MVC & REST API (14강)<br>④ 성능 튜닝과 실전 패턴 (8강)</div>
+          </div>
+          <div class="mock-btn-group"><span class="mock-btn mock-btn-outline" data-action="goto:slide-8">← 목록</span><span class="mock-btn mock-btn-primary" data-action="goto:slide-10">▶ 학습 시작</span><span class="mock-btn" style="background:#7c3aed;color:#fff;border:none;" data-action="toast:찜 목록에 추가됨">♥ 찜</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s9" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>상세 조회</td><td><span class="method-badge get">GET</span> <code>/courses/:id</code></td><td>섹션/레슨 포함</td></tr><tr><td>수강 신청</td><td><span class="method-badge post">POST</span> <code>/enroll</code></td><td>enrollments INSERT</td></tr><tr><td>학습 시작</td><td>-</td><td>→ 09 레슨 뷰어</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s9"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-409">409</span></td><td>이미 수강 중</td><td>"내 강의실로 이동"</td></tr><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">402</span></td><td>결제 필요 (유료)</td><td>결제 모달</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s9"><summary class="panel-section-header">📦 View Model</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">CourseDetail</span><ul><li class="vm-node"><span class="vm-key">id, title, description</span></li><li class="vm-node vm-node--object"><span class="vm-key">sections</span><span class="vm-type">Section[]</span><ul><li class="vm-node"><span class="vm-key">lessons</span><span class="vm-type">Lesson[]</span></li></ul></li><li class="vm-node"><span class="vm-key">is_enrolled</span><span class="vm-type">boolean</span></li><li class="vm-node"><span class="vm-key">progress</span><span class="vm-type">0~1</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s9"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge">PUBLIC</span>상세 조회 · <span class="perm-badge" style="background:#3fb950;">LEARNER</span>수강 신청</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 09. 레슨 뷰어 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="09" data-set="course" id="slide-10">
+  <header class="slide-header"><span class="header-title">레슨 | 영상 뷰어 + 튜터</span><span class="header-screen-id">화면 09</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-put">PUT</span>/lessons/:id/complete → LessonCompleted</span>
+    <span class="badge badge-access">🔐 LEARNER (enrolled)</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/lessons/128</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;gap:6px;height:100%;">
+            <div style="flex:2;">
+              <div style="background:#000;border-radius:4px;aspect-ratio:16/9;position:relative;display:flex;align-items:center;justify-content:center;font-size:24px;">▶️</div>
+              <div style="font-size:9px;color:var(--color-text-bright);margin-top:4px;font-weight:700;">12강. N+1 문제와 fetch join</div>
+              <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;">13:45 / 24:30 · 진도 56%</div>
+              <div class="mock-btn-group" style="margin-top:4px;"><span class="mock-btn mock-btn-outline">◀ 이전</span><span class="mock-btn mock-btn-primary" data-action="toast:레슨 완료! +10 EXP">완료 ✓</span><span class="mock-btn mock-btn-outline">다음 ▶</span><span class="mock-btn" style="background:#7c3aed;color:#fff;border:none;" data-action="goto:slide-11">💬 튜터</span><span class="mock-btn" style="background:#3fb950;color:#fff;border:none;" data-action="goto:slide-19">📝 노트</span></div>
+            </div>
+            <div style="flex:1;background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:5px;font-size:7px;">
+              <div style="font-weight:700;color:var(--color-text-bright);margin-bottom:3px;">📚 레슨 노트</div>
+              <div style="color:var(--color-text-dim);line-height:1.5;">• JPA lazy loading 원리<br>• N+1 재현 코드<br>• fetch join 예제<br>• 배치 사이즈 전략</div>
+              <div style="font-weight:700;color:var(--color-text-bright);margin-top:6px;margin-bottom:3px;">📎 첨부</div>
+              <div style="color:#58a6ff;line-height:1.5;">📄 예제 코드<br>📄 PDF 요약본</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s10" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>레슨 완료</td><td><span class="method-badge put">PUT</span> <code>/lessons/:id/complete</code></td><td>LessonCompleted → Analytics</td></tr><tr><td>튜터 열기</td><td>-</td><td>→ 10 AI 튜터</td></tr><tr><td>노트 작성</td><td>-</td><td>→ 18 노트 에디터</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s10"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-403">403</span></td><td>미수강</td><td>"강의 먼저 등록"</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s10"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">LessonView</span><ul><li class="vm-node"><span class="vm-key">video_url</span><span class="vm-type">HLS</span></li><li class="vm-node"><span class="vm-key">content_md</span><span class="vm-type">markdown</span></li><li class="vm-node"><span class="vm-key">attachments[]</span></li><li class="vm-node"><span class="vm-key">progress_sec</span><span class="vm-type">int</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s10"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">LEARNER</span>수강 등록된 강의만</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 10. AI 튜터 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="10" data-set="tutor" id="slide-11">
+  <header class="slide-header"><span class="header-title">AI 튜터 | 채팅 (노트 Long-term Memory)</span><span class="header-screen-id">화면 10 ⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/ai/chat/sessions/:id/messages (SSE)</span>
+    <span class="badge badge-template">web/tutor/chat</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/tutor/session/8291</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:9px;font-weight:700;color:var(--color-text-bright);">💬 AI 튜터 · Spring Boot</div><label style="font-size:7px;color:var(--color-text-dim);"><input type="checkbox" checked style="margin-right:3px;"/>내 노트 참조</label></div>
+          <div style="display:flex;flex-direction:column;min-height:180px;padding:4px;background:var(--color-bg);border-radius:4px;">
+            <div class="chat-bubble user">JPA에서 fetch join은 언제 써야 해?</div>
+            <div class="chat-bubble bot">fetch join은 <strong>연관된 엔티티를 한 번의 쿼리로 함께 가져올 때</strong> 사용합니다. 특히 <strong>N+1 문제</strong>가 발생하는 경우에 1차 해결책으로 고려하세요.<div class="chat-ref">📎 참고한 내 노트 · "JPA 페치 전략" (2주 전)<br>📚 강의: 12강 13:20~14:50</div></div>
+            <div style="display:flex;gap:4px;margin-top:auto;"><input class="sim-input" placeholder="질문 입력..." style="flex:1;"><span class="mock-btn mock-btn-primary" data-action="toast:응답 생성 중... (Claude API)">전송</span></div>
+            <div style="display:flex;gap:3px;margin-top:4px;"><span class="mock-btn mock-btn-outline" style="font-size:6px;padding:1px 4px;" data-action="toast:👍 피드백 저장">👍 좋아요</span><span class="mock-btn mock-btn-outline" style="font-size:6px;padding:1px 4px;" data-action="toast:👎 피드백 저장">👎 별로</span><span class="mock-btn mock-btn-outline" style="font-size:6px;padding:1px 4px;" data-action="goto:slide-19">📝 노트로</span><span class="mock-btn mock-btn-outline" style="font-size:6px;padding:1px 4px;" data-action="goto:slide-15">📇 카드로</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s11" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><th>액션</th><th>API</th><th>결과</th></tr><tr><td>질문 전송</td><td><span class="method-badge post">POST</span> <code>.../messages</code> SSE</td><td>RAG+LTM 토큰 스트리밍</td></tr><tr><td>피드백</td><td><span class="method-badge post">POST</span> <code>/:id/feedback</code></td><td>GOOD/BAD 저장</td></tr><tr><td>노트로 전환</td><td>-</td><td>응답 → 노트 에디터</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s11"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-429">429</span></td><td>Rate Limit</td><td>"20 req/min 초과"</td></tr><tr><td><span class="status-badge" style="background:#f3e8ff;color:#6b21a8;">503</span></td><td>Kill-switch / LLM 장애</td><td>Fallback (Claude↔OpenAI)</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s11"><summary class="panel-section-header">📦 VM (LTM 주입)</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">TutorContext</span><ul><li class="vm-node"><span class="vm-key">short_term</span><span class="vm-type">messages[10]</span></li><li class="vm-node vm-node--object"><span class="vm-key">long_term</span><ul><li class="vm-node"><span class="vm-key">concept_mastery</span></li><li class="vm-node"><span class="vm-key">leech_cards</span></li><li class="vm-node"><span class="vm-key">personal_notes</span><span class="vm-type">Top3</span></li></ul></li><li class="vm-node"><span class="vm-key">rag_chunks</span><span class="vm-type">course+note</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s11"><summary class="panel-section-header">🔐 프라이버시</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">LEARNER</span><strong>노트 참조 opt-in 기본 Off</strong> · 제3자 PII 마스킹 · 참고 노트 가시화</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 11. 퀴즈 응시 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="11" data-set="quiz" id="slide-12">
+  <header class="slide-header"><span class="header-title">퀴즈 | 응시</span><span class="header-screen-id">화면 11</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/quizzes/:id/submit → QuizSubmitted</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/quizzes/42/attempt</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><div style="font-size:9px;font-weight:700;color:var(--color-text-bright);">N+1 이해도 퀴즈</div><div style="font-size:7px;color:#f59e0b;">⏰ 08:24 / 15:00</div></div>
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);padding:8px;border-radius:4px;margin-bottom:4px;">
+            <div style="font-size:7px;color:var(--color-text-dim);">Q4 / 10 · <span style="color:#f59e0b;">APPLY</span></div>
+            <div style="font-size:9px;color:var(--color-text-bright);margin:4px 0;">다음 JPQL 중 N+1 문제를 해결할 수 있는 것은?</div>
+            <label style="display:block;font-size:8px;padding:3px;"><input type="radio" name="q4"> <code style="font-family:var(--font-mono);font-size:7px;">SELECT o FROM Order o</code></label>
+            <label style="display:block;font-size:8px;padding:3px;background:rgba(63,185,80,.05);border-radius:3px;"><input type="radio" name="q4" checked> <code style="font-family:var(--font-mono);font-size:7px;">SELECT o FROM Order o JOIN FETCH o.items</code></label>
+            <label style="display:block;font-size:8px;padding:3px;"><input type="radio" name="q4"> <code style="font-family:var(--font-mono);font-size:7px;">SELECT o.id FROM Order o</code></label>
+            <textarea class="sim-textarea" placeholder="선택 근거를 서술 (주관식 선택 시)" style="margin-top:4px;"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:7px;color:var(--color-text-dim);"><div style="flex:1;height:3px;background:var(--color-border);border-radius:2px;"><div style="width:40%;height:100%;background:#3fb950;"></div></div>4 / 10</div>
+          <div class="mock-btn-group"><span class="mock-btn mock-btn-outline">← 이전</span><span class="mock-btn mock-btn-primary" data-action="goto:slide-13">제출하고 결과</span><span class="mock-btn mock-btn-outline">다음 →</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s12" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>제출</td><td><span class="method-badge post">POST</span> <code>/submit</code></td><td>→ Outbox → AI 채점 Worker</td></tr><tr><td>임시저장</td><td><span class="method-badge put">PUT</span> <code>/attempts/:id</code></td><td>부분 저장</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s12"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">408</span></td><td>제한 시간 초과</td><td>자동 제출</td></tr><tr><td><span class="status-badge status-409">409</span></td><td>중복 제출</td><td>직전 결과 반환</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s12"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">QuizAttempt</span><ul><li class="vm-node"><span class="vm-key">answers[]</span></li><li class="vm-node"><span class="vm-key">started_at</span></li><li class="vm-node"><span class="vm-key">bloom_level</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s12"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">LEARNER</span>수강 중 · 1회 시도 (재시도 정책에 따름)</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 12. 퀴즈 결과 + 이의제기 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="12" data-set="quiz" id="slide-13">
+  <header class="slide-header"><span class="header-title">퀴즈 | 결과 & 이의제기</span><span class="header-screen-id">화면 12</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/quizzes/:id/results</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/quizzes/attempts/:id/appeal</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup" style="position:relative;">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/quizzes/42/results</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;gap:6px;margin-bottom:4px;"><div style="flex:1;background:var(--color-surface);padding:6px;border-radius:4px;text-align:center;"><div style="font-size:18px;color:#3fb950;font-weight:900;">82</div><div style="font-size:7px;color:var(--color-text-dim);">점수</div></div><div style="flex:1;background:var(--color-surface);padding:6px;border-radius:4px;text-align:center;"><div style="font-size:14px;color:#58a6ff;font-weight:900;">8 / 10</div><div style="font-size:7px;color:var(--color-text-dim);">정답</div></div><div style="flex:1;background:var(--color-surface);padding:6px;border-radius:4px;text-align:center;"><div style="font-size:14px;color:#f59e0b;font-weight:900;">0.92</div><div style="font-size:7px;color:var(--color-text-dim);">AI Conf.</div></div></div>
+          <div style="font-size:8px;color:var(--color-text-bright);font-weight:700;margin:4px 0;">💡 AI 피드백</div>
+          <div class="mock-detail-content" style="font-size:8px;min-height:40px;">N+1 문제의 개념은 잘 이해하고 있습니다. <strong>APPLY 레벨</strong>에서 fetch join과 BatchSize 구분 문제에서 2개 오답이 있었습니다. "JPA 페치 전략" 노트의 예제를 복습하면 도움이 될 거예요.</div>
+          <div style="margin-top:4px;padding:6px;background:rgba(210,153,34,.1);border-left:2px solid #d29922;border-radius:3px;"><div style="font-size:8px;color:#d29922;font-weight:700;">Q7 오답 분석</div><div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;">@BatchSize와 @Fetch(FetchMode.SUBSELECT)의 차이를 혼동. <strong>채점 결과가 부당하다면</strong></div><div style="margin-top:3px;"><span class="mock-btn mock-btn-warning" style="font-size:7px;" data-action="modal:appeal-modal">🚩 이의 제기</span><span class="mock-btn mock-btn-outline" style="font-size:7px;margin-left:3px;" data-action="goto:slide-15">📇 카드로 만들기</span></div></div>
+        </div>
+      </div>
+      <div class="sim-modal-overlay" id="appeal-modal">
+        <div class="sim-modal">
+          <div class="sim-modal-title">🚩 채점 이의 제기</div>
+          <div class="sim-modal-body">강사가 검토 후 재채점합니다 (최대 72시간).</div>
+          <textarea class="sim-textarea" placeholder="사유를 200자 이상 입력해주세요..." style="min-height:60px;"></textarea>
+          <div class="sim-modal-actions" style="margin-top:8px;"><span class="mock-btn mock-btn-outline" data-action="modal-close:">취소</span><span class="mock-btn mock-btn-warning" data-action="toast:이의 제기가 접수되었습니다">접수</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s13" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>결과 조회</td><td><span class="method-badge get">GET</span> <code>/results</code></td><td>score + AI 피드백</td></tr><tr><td>이의 제기</td><td><span class="method-badge post">POST</span> <code>/appeal</code></td><td>status=APPEALED</td></tr><tr><td>카드 생성</td><td>-</td><td>→ 오답 기반 카드</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s13"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">422</span></td><td>이의 사유 부족</td><td>"200자 이상 입력"</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s13"><summary class="panel-section-header">📦 VM (신뢰도)</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">QuizResult</span><ul><li class="vm-node"><span class="vm-key">score</span></li><li class="vm-node"><span class="vm-key">ai_confidence</span><span class="vm-type">0~1</span></li><li class="vm-node"><span class="vm-key">status</span><span class="vm-type">AI_GRADED/CONFIRMED/MANUAL_REVIEW/APPEALED</span></li></ul></li></ul><div style="margin-top:6px;font-size:9px;color:var(--color-text-dim);">Confidence &lt; 0.85 → 자동 강사 검수 큐</div></div></details>
+      <details class="panel-section" name="panel-s13"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>본인 응시만 조회 가능</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 13. 플래시카드 덱 목록 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="13" data-set="flashcard" id="slide-14">
+  <header class="slide-header"><span class="header-title">플래시카드 | 덱 목록</span><span class="header-screen-id">화면 13 ⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/flashcards/decks</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/flashcards/decks</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">LearnFlow</span><div class="mock-navbar-links"><span data-action="goto:slide-8">강의</span><span class="active">카드</span><span data-action="goto:slide-18">노트</span><span data-action="goto:slide-22">대시보드</span></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:9px;font-weight:700;color:var(--color-text-bright);">내 덱 (4)</div><span class="mock-btn" style="background:#3fb950;color:#fff;" data-action="toast:새 덱 만들기">+ 새 덱</span></div>
+          <div style="background:linear-gradient(90deg,rgba(63,185,80,.08) 0%,transparent 100%);border:1px solid rgba(63,185,80,.3);border-radius:4px;padding:6px;margin-bottom:4px;cursor:pointer;" data-action="goto:slide-15">
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:9px;color:var(--color-text-bright);font-weight:700;">🎯 JPA 정복</span><span class="mock-status mock-status-doing" style="font-size:7px;">23장 복습 대기</span></div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;">148장 · 12강 기반 + 노트 5편 연동 · EF 평균 2.47</div>
+            <div style="display:flex;gap:3px;margin-top:3px;"><span style="font-size:6px;color:#3fb950;">● REMEMBER 34</span><span style="font-size:6px;color:#58a6ff;">● APPLY 68</span><span style="font-size:6px;color:#f59e0b;">● ANALYZE 31</span><span style="font-size:6px;color:#bc8cff;">● EVALUATE 15</span></div>
+          </div>
+          <div class="course-card" data-action="goto:slide-15"><div class="course-thumb" style="background:linear-gradient(135deg,#58a6ff,#bc8cff);"></div><div class="course-meta"><div class="course-title">Spring Security 기본</div><div class="course-desc">62장 · 0장 복습 대기 · ✅ 오늘 완료</div></div></div>
+          <div class="course-card" data-action="goto:slide-16"><div class="course-thumb" style="background:linear-gradient(135deg,#f59e0b,#da3633);"></div><div class="course-meta"><div class="course-title">운영체제 (학교)</div><div class="course-desc">89장 · 12장 대기 · ⚠️ leech 3장</div></div></div>
+          <div style="margin-top:4px;padding:5px;background:var(--color-surface);border-radius:3px;font-size:7px;color:var(--color-text-dim);">📊 오늘 복습: <strong>35/47</strong> · 🔥 연속 <strong>7일</strong> · 월 AI 카드 생성 <strong>18/50</strong></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s14" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>덱 목록</td><td><span class="method-badge get">GET</span> <code>/decks</code></td><td>due_count 포함</td></tr><tr><td>덱 생성</td><td><span class="method-badge post">POST</span> <code>/decks</code></td><td>빈 덱 생성</td></tr><tr><td>복습 시작</td><td>-</td><td>→ 14 복습 화면</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s14"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge" style="background:#f3e8ff;color:#6b21a8;">503</span></td><td>Redis 단절</td><td>DB 폴백 + 배너</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s14"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">Deck</span><ul><li class="vm-node"><span class="vm-key">id, title</span></li><li class="vm-node"><span class="vm-key">card_count</span></li><li class="vm-node"><span class="vm-key">due_count</span><span class="vm-type">Redis ZSET</span></li><li class="vm-node"><span class="vm-key">source_note_id</span><span class="vm-type">nullable</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s14"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>본인 덱만 조회 (RLS 아님, FK 기반)</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 14. 플래시카드 복습 (핵심) ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="14" data-set="flashcard" id="slide-15">
+  <header class="slide-header"><span class="header-title">플래시카드 | 복습 (SM-2 + Bloom)</span><span class="header-screen-id">화면 14 ⭐⭐⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/flashcards/review/queue</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/flashcards/review → FlashcardReviewed</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/flashcards/review</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--color-text-dim);margin-bottom:4px;"><span>⏰ 23장 대기 · 🔥 연속 7일</span><span>JPA 정복</span></div>
+          <div class="flash-card-view">
+            <div class="flash-meta">🎯 APPLY · EF 2.62 · 5일 간격</div>
+            <div style="font-size:11px;font-weight:700;color:var(--color-text-bright);margin-bottom:6px;">JPA에서 fetch join은 언제 써야 하나요?</div>
+            <div style="font-size:7px;color:#58a6ff;cursor:pointer;text-decoration:underline;" data-action="toast:답 공개됨">▼ 탭하여 답 보기</div>
+            <div style="margin-top:6px;font-size:7px;color:var(--color-text-dim);">📎 원본 노트: <span style="color:#bc8cff;cursor:pointer;" data-action="goto:slide-19">"JPA 페치 전략"</span> · 🏷 #spring #database</div>
+          </div>
+          <div class="flash-quality-row"><button class="flash-q-btn flash-q-0" data-action="toast:1일 후 다시 만나요 😅">다시 (0)</button><button class="flash-q-btn flash-q-3" data-action="toast:3일 후 복습 📖">어려움 (3)</button><button class="flash-q-btn flash-q-4" data-action="toast:5일 후 다시 만나요! 좋아요 ✨">보통 (4)</button><button class="flash-q-btn flash-q-5" data-action="toast:15일 후! 완벽해요 🎉">쉬움 (5)</button></div>
+          <div class="flash-progress"><span>오늘</span><div class="flash-bar"><div class="flash-bar-fill"></div></div><span>17/23</span></div>
+          <div style="margin-top:4px;padding:4px;background:rgba(210,153,34,.08);border-left:2px solid #d29922;border-radius:3px;font-size:7px;color:#d29922;">⚠️ 관련 약한 개념: <strong>N+1 문제</strong> (mastery 0.55 ↑ 복습으로 개선 중)</div>
+          <div style="margin-top:4px;display:flex;gap:3px;font-size:6px;color:var(--color-text-dim);"><span>⌨️ Space=답</span><span>1~4=평가</span><span>← 이전</span><span>→ 건너뛰기</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s15" open><summary class="panel-section-header">🎯 액션 (SM-2 갱신)</summary><div class="panel-section-body"><table class="action-table"><tr><th>평가</th><th>결과</th></tr><tr><td>quality=0 (다시)</td><td>reps=0, interval=1d, leech++</td></tr><tr><td>quality=3 (어려움)</td><td>EF ↓, interval × EF</td></tr><tr><td>quality=4 (보통)</td><td>EF ≈ 유지</td></tr><tr><td>quality=5 (쉬움)</td><td>EF ↑, interval × EF × bloom_w</td></tr></table><div style="margin-top:4px;font-size:8px;color:var(--color-text-dim);font-family:var(--font-mono);background:#0f172a;padding:4px;border-radius:3px;">EF' = EF + (0.1 - (5-q)*(0.08 + (5-q)*0.02))<br>max(1.3, EF')</div></div></details>
+      <details class="panel-section" name="panel-s15"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge" style="background:#f3e8ff;color:#6b21a8;">503</span></td><td>Redis 단절</td><td>DB 폴백 조회</td></tr><tr><td><span class="status-badge status-409">409</span></td><td>카드 중복 복습</td><td>session_id 멱등성</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s15"><summary class="panel-section-header">📦 ReviewRequest</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">ReviewRequest</span><ul><li class="vm-node"><span class="vm-key">card_id</span></li><li class="vm-node"><span class="vm-key">quality</span><span class="vm-type">0~5</span></li><li class="vm-node"><span class="vm-key">elapsed_ms</span></li><li class="vm-node"><span class="vm-key">session_id</span></li></ul></li><li class="vm-node vm-node--object"><span class="vm-key">ReviewResponse</span><ul><li class="vm-node"><span class="vm-key">next_due_at</span></li><li class="vm-node"><span class="vm-key">new_interval_days</span></li><li class="vm-node"><span class="vm-key">new_ease_factor</span></li><li class="vm-node"><span class="vm-key">concept_mastery_delta</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s15"><summary class="panel-section-header">🔐 권한 / 오프라인</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>본인 ReviewState만 변경 · 모바일은 <strong>POST /review/batch</strong>로 일괄 동기화</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 15. 카드 편집 / 생성 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="15" data-set="flashcard" id="slide-16">
+  <header class="slide-header"><span class="header-title">플래시카드 | 편집 / AI 생성</span><span class="header-screen-id">화면 15</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/flashcards/generate/from-note/:id</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/flashcards/generate/confirm</span>
+    <span class="badge badge-access">🔐 OWNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/flashcards/generate?note=101</div></div>
+        <div class="mock-browser-body">
+          <div style="font-size:9px;font-weight:700;color:var(--color-text-bright);">🤖 AI 카드 생성 · 노트 "JPA 페치 전략"</div>
+          <div style="font-size:7px;color:var(--color-text-dim);margin-bottom:4px;">생성 예상: 5장 · 예상 비용 $0.021 · 월 한도 <strong>18/50</strong></div>
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:5px;margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:8px;"><span style="color:var(--color-text-bright);font-weight:700;">#1 Q: fetch join의 장점 3가지?</span><span style="color:#3fb950;font-size:6px;">🤖 AI · 신규</span></div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;">A: N+1 해결, 한 번의 SQL, 영속성 컨텍스트 활용</div>
+            <div style="font-size:6px;color:var(--color-text-dim);margin-top:2px;">🎯 REMEMBER · 🏷 #jpa #n+1</div>
+          </div>
+          <div style="background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.3);border-radius:4px;padding:5px;margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:8px;"><span style="color:var(--color-text-bright);font-weight:700;">#2 Q: fetch join 남발 시 문제점?</span><span style="color:#d29922;font-size:6px;">⚠️ 중복 90% — 기존 카드에 병합?</span></div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;">A: 페이징 불가, 카테시안 곱 폭증...</div>
+            <div style="margin-top:3px;"><span class="mock-btn mock-btn-outline" style="font-size:6px;" data-action="toast:기존 카드에 태그 추가">병합</span><span class="mock-btn mock-btn-outline" style="font-size:6px;margin-left:3px;">건너뛰기</span></div>
+          </div>
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:5px;margin-bottom:4px;">
+            <div style="font-size:8px;color:var(--color-text-bright);font-weight:700;">#3 Q: JOIN FETCH와 @BatchSize 차이?</div>
+            <div style="font-size:6px;color:var(--color-text-dim);margin-top:1px;">🎯 ANALYZE</div>
+          </div>
+          <div class="mock-btn-group"><span class="mock-btn mock-btn-outline" data-action="goto:slide-19">← 노트로</span><span class="mock-btn mock-btn-primary" data-action="toast:신규 4장, 병합 1장 저장됨 ✨">생성 확정</span><span class="mock-btn" style="background:#7c3aed;color:#fff;border:none;">+ 수동 추가</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s16" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>AI 생성</td><td><span class="method-badge post">POST</span> <code>/generate/from-note/:id</code></td><td>LLM 호출 + 중복 탐지</td></tr><tr><td>확정</td><td><span class="method-badge post">POST</span> <code>/generate/confirm</code></td><td>INSERT + Outbox</td></tr><tr><td>수동 추가</td><td><span class="method-badge post">POST</span> <code>/decks/:id/cards</code></td><td>개별 저장</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s16"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-429">429</span></td><td>월 한도 초과</td><td>"Pro 업그레이드"</td></tr><tr><td><span class="status-badge" style="background:#f3e8ff;color:#6b21a8;">503</span></td><td>Kill-switch</td><td>전사 AI 차단</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s16"><summary class="panel-section-header">📦 중복 탐지</summary><div class="panel-section-body"><div style="font-size:9px;font-family:var(--font-mono);background:#0f172a;color:#7dd3fc;padding:5px;border-radius:3px;">front_embedding = embed(front)<br>WHERE cosine(existing, new) &gt; 0.9<br>→ 병합 제안 (태그 추가)</div></div></details>
+      <details class="panel-section" name="panel-s16"><summary class="panel-section-header">🔐 권한 / FinOps</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>Free: 월 50장 · Pro: 500장 · Semantic Cache 히트 시 차감 안됨</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 16. 복습 통계 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="16" data-set="flashcard" id="slide-17">
+  <header class="slide-header"><span class="header-title">플래시카드 | 통계 (히트맵)</span><span class="header-screen-id">화면 16</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/flashcards/stats/retention · /heatmap</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/flashcards/stats</div></div>
+        <div class="mock-browser-body">
+          <div class="dash-grid" style="margin-bottom:5px;">
+            <div class="dash-card"><div class="dash-card-title">연속 복습</div><div class="dash-card-value" style="color:#f59e0b;">🔥 7일</div><div class="dash-card-trend dash-trend-up">▲ 최고 기록: 12일</div></div>
+            <div class="dash-card"><div class="dash-card-title">기억 유지율</div><div class="dash-card-value" style="color:#3fb950;">82%</div><div class="dash-card-trend dash-trend-up">▲ +3%p 전주</div></div>
+          </div>
+          <div style="font-size:7px;color:var(--color-text-dim);margin:4px 0;">연간 복습 히트맵</div>
+          <div class="heatmap">
+            <div class="heatmap-cell l1"></div><div class="heatmap-cell"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div>
+            <div class="heatmap-cell l3"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div>
+            <div class="heatmap-cell l4"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell"></div>
+            <div class="heatmap-cell"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l2"></div>
+            <div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div>
+          </div>
+          <div style="font-size:7px;color:var(--color-text-dim);display:flex;justify-content:space-between;margin-top:3px;"><span>적음</span><span>🟩🟩🟩🟩</span><span>많음</span></div>
+          <div style="display:flex;gap:4px;margin-top:6px;"><div class="dash-card" style="flex:1;"><div class="dash-card-title">leech 카드</div><div class="dash-card-value" style="font-size:12px;color:#f87171;">⚠️ 3장</div><div style="font-size:6px;color:#58a6ff;cursor:pointer;" data-action="toast:재작성 제안 목록">재작성 제안 보기 →</div></div><div class="dash-card" style="flex:1;"><div class="dash-card-title">평균 EF</div><div class="dash-card-value" style="font-size:12px;">2.47</div><div class="dash-card-trend dash-trend-up">▲ 건강한 범위</div></div></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s17" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>통계 조회</td><td><span class="method-badge get">GET</span> <code>/stats/retention</code></td><td>기간별 유지율</td></tr><tr><td>히트맵</td><td><span class="method-badge get">GET</span> <code>/stats/heatmap</code></td><td>일별 복습량</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s17"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">Stats</span><ul><li class="vm-node"><span class="vm-key">streak_days</span></li><li class="vm-node"><span class="vm-key">retention_rate</span></li><li class="vm-node"><span class="vm-key">leech_count</span></li><li class="vm-node"><span class="vm-key">avg_ease_factor</span></li><li class="vm-node"><span class="vm-key">daily_count[365]</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s17"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span></div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 17. 노트 목록 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="17" data-set="note" id="slide-18">
+  <header class="slide-header"><span class="header-title">노트 | 목록 · 폴더 · 태그</span><span class="header-screen-id">화면 17 ⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/notes?folder=&tag=</span>
+    <span class="badge badge-access">🔐 LEARNER · RLS</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/notes?folder=/dev/spring</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">LearnFlow</span><div class="mock-navbar-links"><span data-action="goto:slide-8">강의</span><span data-action="goto:slide-14">카드</span><span class="active">노트</span><span data-action="goto:slide-22">대시보드</span></div></div>
+          <div style="display:flex;gap:6px;">
+            <div style="flex:1;">
+              <div style="font-size:8px;font-weight:700;color:var(--color-text-bright);margin-bottom:3px;">📁 폴더</div>
+              <div style="font-size:7px;line-height:1.8;color:var(--color-text-dim);">▸ /dev<br>&nbsp;&nbsp;<span style="color:#58a6ff;font-weight:600;">▾ spring</span><br>&nbsp;&nbsp;&nbsp;&nbsp;▸ jpa<br>&nbsp;&nbsp;&nbsp;&nbsp;▸ security<br>&nbsp;&nbsp;▸ react<br>▸ /cs<br>▸ /daily</div>
+              <div style="font-size:8px;font-weight:700;color:var(--color-text-bright);margin-top:5px;margin-bottom:3px;">🏷 태그</div>
+              <div style="font-size:7px;display:flex;flex-wrap:wrap;gap:3px;"><span class="tag tag-blue" style="font-size:6px;padding:1px 5px;">#spring 24</span><span class="tag tag-green" style="font-size:6px;padding:1px 5px;">#jpa 18</span><span class="tag tag-purple" style="font-size:6px;padding:1px 5px;">#n+1 5</span></div>
+              <div style="margin-top:5px;padding:3px;background:rgba(248,113,113,.08);border-radius:3px;font-size:6px;color:#f87171;">⚠️ 미해결 링크 3개</div>
+            </div>
+            <div style="flex:2;">
+              <div class="mock-search-bar"><input class="sim-input" placeholder="🔍 의미 검색: JPA 성능 튜닝..." style="flex:1;"><span class="mock-btn mock-btn-primary" data-action="toast:검색 결과: 유사도 0.82 이상 8편">검색</span><span class="mock-btn" style="background:#3fb950;color:#fff;" data-action="goto:slide-19">+ 새 노트</span></div>
+              <div class="mock-card" data-action="goto:slide-19"><div class="mock-card-title">📝 JPA 페치 전략</div><div class="mock-card-text">#spring #jpa · 820단어 · 백링크 3 · 카드 5 · 2주 전</div></div>
+              <div class="mock-card" data-action="goto:slide-19"><div class="mock-card-title">📝 성능 튜닝 체크리스트</div><div class="mock-card-text">#spring · 512단어 · 백링크 2 · 어제</div></div>
+              <div class="mock-card"><div class="mock-card-title">📝 N+1 해결 패턴 모음</div><div class="mock-card-text">#n+1 · 1,250단어 · 백링크 5</div></div>
+              <div class="mock-card" data-action="toast:노트 열기"><div class="mock-card-title">📝 Spring Security Filter Chain</div><div class="mock-card-text">#spring #security · 680단어</div></div>
+              <div class="mock-pagination"><span class="active">1</span><span>2</span><span>3</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s18" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>목록</td><td><span class="method-badge get">GET</span> <code>/notes</code></td><td>폴더/태그 필터</td></tr><tr><td>의미 검색</td><td><span class="method-badge get">GET</span> <code>/notes/search</code></td><td>pgvector + BM25 hybrid</td></tr><tr><td>노트 열기</td><td>-</td><td>→ 18 에디터</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s18"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-403">403</span></td><td>RLS 위반 시도</td><td>빈 결과 (감사 로그)</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s18"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">NoteListItem</span><ul><li class="vm-node"><span class="vm-key">id, title, slug</span></li><li class="vm-node"><span class="vm-key">folder_path</span></li><li class="vm-node"><span class="vm-key">tags[]</span></li><li class="vm-node"><span class="vm-key">backlink_count</span></li><li class="vm-node"><span class="vm-key">card_count</span></li><li class="vm-node"><span class="vm-key">word_count</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s18"><summary class="panel-section-header">🔐 RLS</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span><strong>PostgreSQL Row-Level Security</strong>로 DB 레벨 격리 · SHARED_TEAM만 예외</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 18. 노트 에디터 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="18" data-set="note" id="slide-19">
+  <header class="slide-header"><span class="header-title">노트 | 에디터 (TipTap + 위키링크)</span><span class="header-screen-id">화면 18 ⭐⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-put">PUT</span>/notes/:id (If-Match OCC)</span>
+    <span class="badge badge-access">🔐 OWNER · RLS</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/notes/101/edit</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><input class="sim-input" value="JPA 페치 전략" style="font-size:10px;font-weight:700;color:var(--color-text-bright);max-width:60%;"><div style="font-size:6px;color:var(--color-text-dim);">💾 2초 전 자동저장 · v7</div></div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:2;background:var(--color-bg);border:1px solid var(--color-border);border-radius:3px;padding:5px;font-size:8px;color:var(--color-text);line-height:1.7;">
+              <div style="color:#58a6ff;font-weight:700;">## 핵심 정리</div>
+              <div>Lazy는 프록시로 감싸서 접근 시점에 쿼리를 날린다.<br>반면 <span class="wiki-link" data-action="toast:노트 이동">[[Eager Loading]]</span>은 즉시 로딩으로...</div>
+              <div style="color:#58a6ff;font-weight:700;margin-top:4px;">## 언제 쓰나</div>
+              <div>→ <span class="wiki-link" data-action="toast:노트 이동">[[N+1 문제]]</span> 의심 시 1차 해결<br>→ <span class="wiki-link unresolved" data-action="toast:새 노트 생성?">[[Batch Size 전략]]</span> 은 페이징 필요할 때</div>
+              <div style="margin-top:4px;color:#bc8cff;">#spring #jpa #n+1</div>
+              <div style="margin-top:6px;padding:3px;background:rgba(63,185,80,.1);border-left:2px solid #3fb950;border-radius:2px;font-size:7px;">💡 텍스트 선택 → "📇 카드로 만들기" 플로팅 메뉴</div>
+            </div>
+            <div style="flex:1;background:var(--color-surface);border:1px solid var(--color-border);border-radius:3px;padding:5px;font-size:7px;">
+              <div style="font-weight:700;color:var(--color-text-bright);margin-bottom:3px;">🔗 백링크 (3)</div>
+              <div style="color:#58a6ff;cursor:pointer;line-height:1.5;">· 성능 튜닝 체크리스트<br>· N+1 해결 패턴<br>· JPA 학습 로드맵</div>
+              <div style="font-weight:700;color:var(--color-text-bright);margin-top:5px;margin-bottom:3px;">↗ 아웃링크 (2)</div>
+              <div style="color:#58a6ff;line-height:1.5;">· Eager Loading<br>· <span style="color:#f87171;">Batch Size 전략 ⚠️</span></div>
+              <div style="font-weight:700;color:var(--color-text-bright);margin-top:5px;margin-bottom:3px;">📇 이 노트의 카드 (5)</div>
+              <div style="color:var(--color-text-dim);font-size:6px;line-height:1.5;">Q: fetch join 언제?<br>Q: Lazy 작동 원리<br>+3장</div>
+            </div>
+          </div>
+          <div class="mock-btn-group" style="margin-top:4px;"><span class="mock-btn mock-btn-outline" data-action="goto:slide-18">← 목록</span><span class="mock-btn" style="background:#3fb950;color:#fff;" data-action="goto:slide-16">📇 카드 생성</span><span class="mock-btn mock-btn-primary" data-action="goto:slide-20">🔗 그래프로</span><span class="mock-btn mock-btn-outline" data-action="toast:공유 링크 복사">↗ 공유</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s19" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>자동 저장</td><td><span class="method-badge put">PUT</span> <code>/notes/:id</code> + If-Match</td><td>2초 디바운스 + OCC</td></tr><tr><td>위키링크 해석</td><td>Flexmark AST</td><td>자동완성 + 미해결 추적</td></tr><tr><td>카드 생성</td><td><span class="method-badge post">POST</span> <code>/generate/from-note</code></td><td>→ 15 AI 생성</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s19"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-409">409</span></td><td>버전 충돌</td><td>서버 버전 병합 UI</td></tr><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">413</span></td><td>본문 과대 (1MB+)</td><td>분할 권장 토스트</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s19"><summary class="panel-section-header">📦 VM / Outbox</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">NoteUpdate</span><ul><li class="vm-node"><span class="vm-key">content_md</span></li><li class="vm-node"><span class="vm-key">tags[]</span></li><li class="vm-node"><span class="vm-key">version</span></li></ul></li></ul><div style="margin-top:5px;font-size:9px;color:var(--color-text-dim);">Outbox 이벤트: <code>NoteUpdated</code>, <code>NoteLinked</code> → Embedding Worker + Graph Builder</div></div></details>
+      <details class="panel-section" name="panel-s19"><summary class="panel-section-header">🔐 RLS / 프라이버시</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>PostgreSQL <code>SET LOCAL app.current_user_id</code>로 DB가 자동 필터</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 19. 지식 그래프 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="19" data-set="note" id="slide-20">
+  <header class="slide-header"><span class="header-title">노트 | 지식 그래프 (Force-directed)</span><span class="header-screen-id">화면 19 ⭐⭐⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/notes/graph?max_nodes=300</span>
+    <span class="badge badge-template">web/note/graph</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/notes/graph</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-search-bar"><input class="sim-input" placeholder="🔍 의미 검색 & 하이라이트: JPA 성능 튜닝..." style="flex:1;"><span class="mock-btn" style="background:#7c3aed;color:#fff;">필터 ▾</span></div>
+          <div style="display:flex;gap:4px;">
+            <div class="graph-canvas" style="flex:2;">
+              <div class="graph-edge" style="left:80px;top:60px;width:70px;transform:rotate(25deg);"></div>
+              <div class="graph-edge" style="left:80px;top:60px;width:90px;transform:rotate(-30deg);"></div>
+              <div class="graph-edge" style="left:150px;top:100px;width:60px;transform:rotate(-15deg);"></div>
+              <div class="graph-edge" style="left:150px;top:100px;width:80px;transform:rotate(55deg);"></div>
+              <div class="graph-edge" style="left:190px;top:140px;width:50px;transform:rotate(-40deg);"></div>
+              <div class="graph-edge" style="left:230px;top:70px;width:50px;transform:rotate(-20deg);"></div>
+              <div class="graph-node" style="left:60px;top:50px;" data-action="toast:JPA 페치 전략">JPA</div>
+              <div class="graph-node" style="left:140px;top:90px;width:28px;height:28px;font-size:7px;" data-action="toast:선택됨">페치</div>
+              <div class="graph-node secondary" style="left:210px;top:130px;">N+1</div>
+              <div class="graph-node secondary" style="left:180px;top:30px;">성능</div>
+              <div class="graph-node tertiary" style="left:230px;top:65px;">튜닝</div>
+              <div class="graph-node" style="left:280px;top:95px;">Lazy</div>
+              <div class="graph-node tertiary" style="left:260px;top:170px;">Batch</div>
+              <div class="graph-node secondary" style="left:100px;top:180px;">Eager</div>
+              <div class="graph-node" style="left:50px;top:130px;width:20px;height:20px;font-size:6px;">DB</div>
+              <div class="graph-stat">132 노드 · 287 엣지 · 8 클러스터</div>
+            </div>
+            <div style="flex:1;background:var(--color-surface);border:1px solid var(--color-border);border-radius:3px;padding:5px;font-size:7px;">
+              <div style="font-weight:700;color:var(--color-text-bright);">📌 선택: JPA 페치 전략</div>
+              <div style="color:var(--color-text-dim);margin-top:2px;">2주 전 작성 · 820단어</div>
+              <div style="color:var(--color-text-dim);margin-top:2px;">🔗 백링크 3 · ↗ 아웃링크 2</div>
+              <div style="color:var(--color-text-dim);margin-top:2px;">📇 이 노트에서 파생된 카드 5장</div>
+              <div class="mock-detail-content" style="min-height:40px;font-size:6px;margin-top:4px;">Lazy는 프록시로 감싸서 접근 시점에 쿼리를 날린다...</div>
+              <div class="mock-btn-group" style="margin-top:4px;"><span class="mock-btn mock-btn-primary" style="font-size:6px;padding:2px 6px;" data-action="goto:slide-19">노트 열기</span><span class="mock-btn mock-btn-outline" style="font-size:6px;padding:2px 6px;" data-action="goto:slide-15">카드 보기</span></div>
+              <div style="margin-top:5px;padding:3px;background:rgba(248,113,113,.08);border-left:2px solid #f87171;font-size:6px;color:#f87171;">⚠️ 고립 노드 3개 <span style="color:#58a6ff;cursor:pointer;" data-action="toast:AI가 의미적 유사 노트 추천">[링크 추천]</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s20" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>그래프 로드</td><td><span class="method-badge get">GET</span> <code>/graph?max=300</code></td><td>캐시 우선 (TTL 24h)</td></tr><tr><td>서브그래프</td><td><span class="method-badge get">GET</span> <code>/graph/subgraph/:id</code></td><td>depth=2</td></tr><tr><td>링크 추천</td><td><span class="method-badge post">POST</span> <code>/notes/suggest-links</code></td><td>의미 유사 Top-K</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s20"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">422</span></td><td>노드 0개</td><td>"첫 노트 작성" 안내</td></tr><tr><td><span class="status-badge status-500">500</span></td><td>Graph Builder 실패</td><td>캐시 이전 버전 사용</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s20"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">Graph</span><ul><li class="vm-node"><span class="vm-key">nodes[]</span><span class="vm-type">{id,title,tags,card_count}</span></li><li class="vm-node"><span class="vm-key">edges[]</span><span class="vm-type">{source,target,type:WIKI/TAG}</span></li><li class="vm-node"><span class="vm-key">layout.coords</span><span class="vm-type">force-directed</span></li><li class="vm-node"><span class="vm-key">from_cache</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s20"><summary class="panel-section-header">🔐 성능</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>300+ 노드 클러스터 축약 · 서버 사전 계산 · p95 &lt; 500ms (캐시)</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 20. 모바일 퀵캡처 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="20" data-set="mobile" id="slide-21">
+  <header class="slide-header"><span class="header-title">모바일 | 퀵 캡처 + 오프라인 복습</span><span class="header-screen-id">화면 20 📱 v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/notes/quick-capture</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/flashcards/review/batch</span>
+    <span class="badge badge-access">🔐 LEARNER · Flutter 3.x</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div style="display:flex;justify-content:space-around;align-items:flex-start;padding:10px 0;">
+        <div class="mock-mobile-frame">
+          <div class="mock-screen">
+            <div style="font-size:7px;font-weight:700;color:var(--color-text-bright);margin-bottom:3px;">📝 퀵 캡처</div>
+            <input class="sim-input" placeholder="제목 자동생성..." style="font-size:7px;margin-bottom:3px;">
+            <textarea class="sim-textarea" placeholder="빠른 메모..." style="min-height:60px;font-size:7px;"></textarea>
+            <div style="display:flex;gap:3px;margin-top:3px;"><span class="mock-btn" style="font-size:6px;flex:1;text-align:center;background:#f59e0b;color:#fff;border:none;">🎤 음성</span></div>
+            <div style="margin-top:3px;font-size:6px;color:var(--color-text-dim);">📡 오프라인 저장 · 복구 시 동기화</div>
+            <span class="mock-btn mock-btn-primary" style="display:block;width:100%;text-align:center;margin-top:4px;font-size:6px;" data-action="toast:로컬 저장 → 네트워크 복구 시 동기화">저장</span>
+          </div>
+        </div>
+        <div class="mock-mobile-frame">
+          <div class="mock-screen">
+            <div style="font-size:6px;color:var(--color-text-dim);">📴 오프라인 · 5장 버퍼</div>
+            <div class="flash-card-view" style="min-height:80px;font-size:7px;padding:6px;">
+              <div style="font-size:8px;font-weight:700;color:var(--color-text-bright);">fetch join 언제?</div>
+              <div style="font-size:6px;color:var(--color-text-dim);margin-top:2px;">탭하여 답</div>
+            </div>
+            <div style="display:flex;gap:2px;justify-content:center;"><button class="flash-q-btn flash-q-0" style="font-size:5px;padding:1px 4px;" data-action="toast:로컬 버퍼 업데이트">다시</button><button class="flash-q-btn flash-q-3" style="font-size:5px;padding:1px 4px;" data-action="toast:로컬 버퍼 업데이트">어려움</button><button class="flash-q-btn flash-q-4" style="font-size:5px;padding:1px 4px;" data-action="toast:로컬 버퍼 업데이트">보통</button><button class="flash-q-btn flash-q-5" style="font-size:5px;padding:1px 4px;" data-action="toast:로컬 버퍼 업데이트">쉬움</button></div>
+            <div style="margin-top:4px;font-size:6px;color:var(--color-text-dim);">👉 좌: 다시 / 우: 쉬움<br>👆 위: 답 / 👇 아래: 건너뛰기</div>
+            <div style="margin-top:3px;padding:2px;background:rgba(63,185,80,.15);border-radius:2px;font-size:5px;color:#3fb950;">✓ 네트워크 복구 시 일괄 동기화</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s21" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>퀵 캡처</td><td><span class="method-badge post">POST</span> <code>/notes/quick-capture</code></td><td>제목 자동 + STT</td></tr><tr><td>오프라인 복습</td><td>drift SQLite 버퍼</td><td>로컬 ReviewState</td></tr><tr><td>일괄 동기화</td><td><span class="method-badge post">POST</span> <code>/review/batch</code></td><td>LWW + 서버 SM-2</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s21"><summary class="panel-section-header">🚨 충돌</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-409">409</span></td><td>동시 편집</td><td>LWW + 사용자 확인 UI</td></tr><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">400</span></td><td>이미 복습한 카드</td><td>session_id 멱등</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s21"><summary class="panel-section-header">📦 SyncRequest</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">ReviewBatch</span><ul><li class="vm-node"><span class="vm-key">reviews[]</span><span class="vm-type">50 max</span></li><li class="vm-node"><span class="vm-key">device_id</span></li><li class="vm-node"><span class="vm-key">local_session_id</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s21"><summary class="panel-section-header">🔐 권한 / UX</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>Flutter flavor=prod · FCM 푸시 · 위젯/공유시트 진입</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 21. 학습 대시보드 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_LEARNER" data-id="21" data-set="analytics" id="slide-22">
+  <header class="slide-header"><span class="header-title">학습 | 대시보드</span><span class="header-screen-id">화면 21</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/analytics/me/dashboard</span>
+    <span class="badge badge-access">🔐 LEARNER</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/me/dashboard</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">LearnFlow</span><div class="mock-navbar-links"><span data-action="goto:slide-8">강의</span><span data-action="goto:slide-14">카드</span><span data-action="goto:slide-18">노트</span><span class="active">대시보드</span></div></div>
+          <div class="dash-grid" style="margin-bottom:4px;">
+            <div class="dash-card" data-action="goto:slide-15"><div class="dash-card-title">오늘의 복습</div><div class="dash-card-value" style="color:#d29922;">23 장</div><div class="dash-card-trend" style="color:#58a6ff;">복습하러 가기 →</div></div>
+            <div class="dash-card"><div class="dash-card-title">주간 학습</div><div class="dash-card-value">5.2h</div><div class="dash-card-trend dash-trend-up">▲ +40% 목표</div></div>
+          </div>
+          <div style="font-size:7px;color:var(--color-text-dim);margin-bottom:2px;">📊 concept_mastery 히트맵 (개념별 0~1)</div>
+          <div class="heatmap" style="grid-template-columns:repeat(12,1fr);">
+            <div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div>
+            <div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l3"></div>
+          </div>
+          <div style="margin-top:4px;padding:5px;background:rgba(248,113,113,.08);border-left:2px solid #f87171;border-radius:3px;">
+            <div style="font-size:8px;color:#f87171;font-weight:700;">🎯 취약 개념 TOP 3</div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;line-height:1.6;">1. N+1 문제 (mastery 0.55 · leech 3회)<br>2. Transaction Propagation (0.62)<br>3. Spring Security Filter Chain (0.68)</div>
+            <div style="margin-top:3px;"><span class="mock-btn" style="background:#7c3aed;color:#fff;font-size:7px;" data-action="toast:약점 기반 AI 추천 생성">AI 추천 받기</span></div>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:4px;"><div class="dash-card" style="flex:1;"><div class="dash-card-title">카드 연속</div><div class="dash-card-value" style="font-size:12px;color:#f59e0b;">🔥 7일</div></div><div class="dash-card" style="flex:1;"><div class="dash-card-title">최근 노트</div><div style="font-size:7px;color:var(--color-text-dim);cursor:pointer;" data-action="goto:slide-19">· JPA 페치 전략<br>· 성능 튜닝...</div></div></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s22" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>대시보드</td><td><span class="method-badge get">GET</span> <code>/me/dashboard</code></td><td>위젯별 집계</td></tr><tr><td>취약점</td><td><span class="method-badge get">GET</span> <code>/me/weaknesses</code></td><td>bottom-K concepts</td></tr><tr><td>AI 추천</td><td><span class="method-badge get">GET</span> <code>/me/recommendations</code></td><td>다음 레슨/카드</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s22"><summary class="panel-section-header">📦 VM (삼중 시그널)</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">MasteryTriple</span><ul><li class="vm-node"><span class="vm-key">quiz_signal</span></li><li class="vm-node"><span class="vm-key">flashcard_signal</span><span class="vm-type">v5.0</span></li><li class="vm-node"><span class="vm-key">note_signal</span><span class="vm-type">v5.0</span></li><li class="vm-node"><span class="vm-key">combined_score</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s22"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#3fb950;">OWNER</span>본인 데이터만</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 22. 강사 · 강의 관리 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_INSTRUCTOR" data-id="22" data-set="instructor" id="slide-23">
+  <header class="slide-header"><span class="header-title">강사 | 강의 관리 + AI 퀴즈 생성</span><span class="header-screen-id">화면 22</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/courses</span>
+    <span class="badge badge-method"><span class="method-label method-post">POST</span>/ai/quizzes/generate</span>
+    <span class="badge badge-access">🔐 INSTRUCTOR</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/instructor/courses</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">Instructor Console</span><div class="mock-navbar-links"><span class="active">강의</span><span data-action="goto:slide-24">검수 큐</span><span>분석</span></div></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><div style="font-size:9px;font-weight:700;color:var(--color-text-bright);">내 강의 (3)</div><span class="mock-btn" style="background:#f59e0b;color:#fff;" data-action="toast:새 강의 생성">+ 새 강의</span></div>
+          <table class="mock-table">
+            <thead><tr><th>#</th><th>제목</th><th>수강생</th><th>평점</th><th>AI 퀴즈</th><th>액션</th></tr></thead>
+            <tbody>
+              <tr data-action="toast:12강 편집"><td>1</td><td style="color:#f59e0b;">Spring Boot 입문</td><td>312</td><td>⭐4.8</td><td>42/42</td><td><span class="mock-btn mock-btn-outline" style="font-size:6px;">편집</span></td></tr>
+              <tr><td>2</td><td style="color:#f59e0b;">실전 MSA</td><td>89</td><td>⭐4.6</td><td>22/28 <span class="mock-status mock-status-doing" style="font-size:5px;">생성중</span></td><td><span class="mock-btn" style="background:#f59e0b;color:#fff;font-size:6px;" data-action="toast:AI 퀴즈 6개 생성 시작">AI 생성</span></td></tr>
+              <tr><td>3</td><td style="color:#f59e0b;">JPA 심화</td><td>124</td><td>⭐4.7</td><td>18/18</td><td><span class="mock-btn mock-btn-outline" style="font-size:6px;">편집</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:6px;padding:5px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:3px;">
+            <div style="font-size:8px;font-weight:700;color:var(--color-text-bright);margin-bottom:3px;">🤖 AI 퀴즈 생성 옵션</div>
+            <div style="display:flex;gap:4px;font-size:7px;align-items:center;flex-wrap:wrap;"><span>난이도:</span><select class="sim-select"><option>초급</option><option>중급</option><option>고급</option></select><span>문항:</span><input class="sim-input" type="number" value="10" style="width:40px;"><span>Bloom:</span><span style="color:#3fb950;">R30/U40/A30%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s23" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>강의 생성</td><td><span class="method-badge post">POST</span> <code>/courses</code></td><td>INSTRUCTOR 필요</td></tr><tr><td>레슨 추가</td><td><span class="method-badge post">POST</span> <code>/sections/:id/lessons</code></td><td>→ ContentCreated</td></tr><tr><td>AI 퀴즈</td><td><span class="method-badge post">POST</span> <code>/ai/quizzes/generate</code></td><td>LLM 호출</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s23"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge status-403">403</span></td><td>타 강사 강의</td><td>감사 로그</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s23"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">QuizGenRequest</span><ul><li class="vm-node"><span class="vm-key">lesson_id</span></li><li class="vm-node"><span class="vm-key">difficulty</span></li><li class="vm-node"><span class="vm-key">bloom_distribution</span></li><li class="vm-node"><span class="vm-key">question_count</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s23"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#f59e0b;">INSTRUCTOR</span>본인 강의 한정</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 23. 강사 · Review Queue ═══ -->
+<section class="slide sb-slide" data-role="ROLE_INSTRUCTOR" data-id="23" data-set="instructor" id="slide-24">
+  <header class="slide-header"><span class="header-title">강사 | Manual Review Queue</span><span class="header-screen-id">화면 23</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/instructor/review-queue</span>
+    <span class="badge badge-method"><span class="method-label method-put">PUT</span>/review-queue/:id/resolve</span>
+    <span class="badge badge-access">🔐 INSTRUCTOR · HITL</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup" style="position:relative;">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/instructor/review-queue</div></div>
+        <div class="mock-browser-body">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><div style="font-size:9px;font-weight:700;color:var(--color-text-bright);">🔍 검수 대기 · 12건 (Conf&lt;0.85)</div><div style="font-size:7px;color:var(--color-text-dim);">이의 2건 · SLA 72h</div></div>
+          <div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:4px;padding:5px;margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:8px;"><span style="color:#f87171;font-weight:700;">🚩 이의 · 김학생 · 퀴즈 #42 Q7</span><span style="color:#d29922;">AI Conf 0.58</span></div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;">학생 주장: "BatchSize와 FetchMode.SUBSELECT는 같은 효과 아닌가요?"</div>
+            <div style="font-size:7px;color:var(--color-text);margin-top:2px;padding:3px;background:var(--color-bg);border-radius:2px;">AI 피드백: 두 방식 모두 IN 쿼리를 쓰지만 BatchSize는 지연 로딩 유지, SUBSELECT는 한 번에 로드...</div>
+            <div style="margin-top:3px;"><span class="mock-btn mock-btn-primary" style="font-size:6px;" data-action="modal:resolve-modal">상세 검토</span><span class="mock-btn mock-btn-outline" style="font-size:6px;margin-left:2px;" data-action="toast:AI 결정 유지">유지</span><span class="mock-btn mock-btn-warning" style="font-size:6px;margin-left:2px;" data-action="toast:학생 손 들어줌 · 재채점">재채점</span></div>
+          </div>
+          <table class="mock-table">
+            <thead><tr><th>유형</th><th>학생</th><th>항목</th><th>Conf</th><th>대기</th><th>액션</th></tr></thead>
+            <tr data-action="toast:상세 진입"><td><span class="mock-status mock-status-doing" style="font-size:5px;">퀴즈</span></td><td>박학생</td><td>#42 Q3</td><td>0.72</td><td>4h</td><td><span class="mock-btn mock-btn-outline" style="font-size:5px;">검토</span></td></tr>
+            <tr data-action="toast:상세 진입"><td><span class="mock-status mock-status-fail" style="font-size:5px;">과제</span></td><td>이학생</td><td>#11</td><td>0.68</td><td>12h</td><td><span class="mock-btn mock-btn-outline" style="font-size:5px;">검토</span></td></tr>
+            <tr data-action="toast:상세 진입"><td><span class="mock-status mock-status-doing" style="font-size:5px;">퀴즈</span></td><td>최학생</td><td>#42 Q9</td><td>0.79</td><td>20h</td><td><span class="mock-btn mock-btn-outline" style="font-size:5px;">검토</span></td></tr>
+          </table>
+          <div style="margin-top:5px;padding:5px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:3px;font-size:7px;color:var(--color-text-dim);">💡 이번 주: 42건 완료 · 평균 3.2분 · 수용률 34%</div>
+        </div>
+      </div>
+      <div class="sim-modal-overlay" id="resolve-modal">
+        <div class="sim-modal">
+          <div class="sim-modal-title">재검수 결정</div>
+          <div class="sim-modal-body">학생 주장에 근거가 있습니다. BatchSize의 미묘한 차이를 AI가 놓쳤습니다.</div>
+          <textarea class="sim-textarea" placeholder="강사 피드백 (학생에게 전달)" style="min-height:40px;"></textarea>
+          <div class="sim-modal-actions" style="margin-top:8px;"><span class="mock-btn mock-btn-outline" data-action="modal-close:">취소</span><span class="mock-btn mock-btn-warning" data-action="toast:재채점 확정 · 학생 알림 발송">확정</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s24" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>큐 조회</td><td><span class="method-badge get">GET</span> <code>/review-queue</code></td><td>Conf&lt;0.85 + APPEAL</td></tr><tr><td>해결</td><td><span class="method-badge put">PUT</span> <code>/resolve</code></td><td>CONFIRMED or 재채점</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s24"><summary class="panel-section-header">🚨 오류</summary><div class="panel-section-body"><table class="error-table"><tr><td><span class="status-badge" style="background:#fef3c7;color:#92400e;">408</span></td><td>SLA 초과 (72h)</td><td>자동 에스컬레이션</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s24"><summary class="panel-section-header">📦 VM</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node vm-node--object"><span class="vm-key">ReviewItem</span><ul><li class="vm-node"><span class="vm-key">type</span><span class="vm-type">QUIZ/ASSIGNMENT/APPEAL</span></li><li class="vm-node"><span class="vm-key">confidence</span></li><li class="vm-node"><span class="vm-key">wait_hours</span></li><li class="vm-node"><span class="vm-key">appeal_reason?</span></li></ul></li></ul></div></details>
+      <details class="panel-section" name="panel-s24"><summary class="panel-section-header">🔐 HITL</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#f59e0b;">INSTRUCTOR</span>본인 강의 제출만 · 감사 로그 AOP</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 24. 관리자 · AI 품질 ═══ -->
+<section class="slide sb-slide" data-role="ROLE_ADMIN" data-id="24" data-set="admin" id="slide-25">
+  <header class="slide-header"><span class="header-title">관리자 | AI 품질 대시보드 (RAGAS)</span><span class="header-screen-id">화면 24</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/admin/ai/quality/*</span>
+    <span class="badge badge-access">🔐 ADMIN</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/admin/ai/quality</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">Admin</span><div class="mock-navbar-links"><span class="active">AI 품질</span><span data-action="goto:slide-26">FinOps</span><span data-action="goto:slide-27">Knowledge</span></div></div>
+          <div class="dash-grid" style="margin-bottom:4px;">
+            <div class="dash-card"><div class="dash-card-title">Overall RAGAS</div><div class="dash-card-value" style="color:#3fb950;">0.83</div><div class="dash-card-trend dash-trend-up">▲ 0.02 주간</div></div>
+            <div class="dash-card"><div class="dash-card-title">Faithfulness</div><div class="dash-card-value">0.89</div><div class="dash-card-trend dash-trend-up">▲ 안정</div></div>
+            <div class="dash-card"><div class="dash-card-title">Hallucination</div><div class="dash-card-value" style="color:#3fb950;">0.03</div><div class="dash-card-trend dash-trend-down">▼ -0.01 👍</div></div>
+            <div class="dash-card"><div class="dash-card-title">👍/👎 비율</div><div class="dash-card-value">87%</div><div class="dash-card-trend dash-trend-up">▲ +2%p</div></div>
+          </div>
+          <div style="font-size:7px;color:var(--color-text-dim);margin:4px 0;">📈 주간 지표 트렌드</div>
+          <div style="height:60px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:3px;padding:4px;position:relative;">
+            <svg width="100%" height="100%" viewBox="0 0 200 50" preserveAspectRatio="none"><polyline fill="none" stroke="#3fb950" stroke-width="1.5" points="0,35 30,30 60,25 90,28 120,20 150,22 180,15 200,18"/><polyline fill="none" stroke="#58a6ff" stroke-width="1.5" points="0,28 30,25 60,22 90,20 120,18 150,15 180,12 200,14"/></svg>
+            <span style="position:absolute;top:2px;left:4px;font-size:6px;color:#3fb950;">● Overall</span><span style="position:absolute;top:2px;left:44px;font-size:6px;color:#58a6ff;">● Faithfulness</span>
+          </div>
+          <div style="margin-top:4px;padding:5px;background:rgba(124,58,237,.08);border-left:2px solid #7c3aed;border-radius:3px;font-size:7px;">
+            <div style="color:#bc8cff;font-weight:700;">🧪 A/B 테스트: 튜터-프롬프트-v7 vs v8</div>
+            <div style="color:var(--color-text-dim);margin-top:2px;">v8: mastery_delta <strong>+0.08</strong> · latency <strong>-12%</strong> · <span class="mock-btn mock-btn-primary" style="font-size:6px;padding:1px 4px;" data-action="toast:프롬프트 v8 승격 완료">승격</span></div>
+          </div>
+          <div style="margin-top:4px;font-size:7px;color:#f87171;">⚠️ Context Recall 0.72 (기준 0.75 미달) · 최근 문서 재색인 필요</div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s25" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>RAGAS 요약</td><td><span class="method-badge get">GET</span> <code>/quality/ragas/summary</code></td><td>주간</td></tr><tr><td>A/B 결과</td><td><span class="method-badge get">GET</span> <code>/ab-tests/:id/results</code></td><td>mastery_delta</td></tr><tr><td>프롬프트 롤백</td><td><span class="method-badge put">PUT</span> <code>/prompts/:id/rollback</code></td><td>이전 버전 활성</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s25"><summary class="panel-section-header">📦 3층 평가</summary><div class="panel-section-body"><div style="font-size:9px;line-height:1.7;">① 사용자 피드백 (👍/👎)<br>② 자동 (RAGAS + DeepEval)<br>③ 인간 (샘플링 + Importance)</div></div></details>
+      <details class="panel-section" name="panel-s25"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#58a6ff;">ADMIN</span></div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 25. 관리자 · FinOps ═══ -->
+<section class="slide sb-slide" data-role="ROLE_ADMIN" data-id="25" data-set="admin" id="slide-26">
+  <header class="slide-header"><span class="header-title">관리자 | FinOps + Kill-switch</span><span class="header-screen-id">화면 25</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/admin/finops/*</span>
+    <span class="badge badge-method"><span class="method-label method-put">PUT</span>/kill-switch</span>
+    <span class="badge badge-access">🔐 ADMIN</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup" style="position:relative;">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/admin/finops</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">Admin</span><div class="mock-navbar-links"><span data-action="goto:slide-25">AI 품질</span><span class="active">FinOps</span><span data-action="goto:slide-27">Knowledge</span></div></div>
+          <div class="dash-grid" style="margin-bottom:4px;">
+            <div class="dash-card"><div class="dash-card-title">월 누적 비용</div><div class="dash-card-value" style="color:#58a6ff;">$842</div><div class="dash-card-trend" style="color:#d29922;">⚠ Soft $1,000 / Hard $2,000</div></div>
+            <div class="dash-card"><div class="dash-card-title">cost_per_MAU</div><div class="dash-card-value">$0.42</div><div class="dash-card-trend dash-trend-down">▼ 목표 $0.50 ✓</div></div>
+            <div class="dash-card"><div class="dash-card-title">Semantic Cache</div><div class="dash-card-value" style="color:#3fb950;">47%</div><div class="dash-card-trend dash-trend-up">▲ 목표 40%+ ✓</div></div>
+            <div class="dash-card"><div class="dash-card-title">Kill-switch</div><div class="dash-card-value" style="font-size:12px;color:#3fb950;">🟢 OFF</div><span class="mock-btn mock-btn-danger" style="font-size:6px;margin-top:2px;display:inline-block;" data-action="modal:kill-modal">토글</span></div>
+          </div>
+          <div style="font-size:7px;color:var(--color-text-dim);margin:4px 0 2px;">서비스별 단가 (Unit Economics)</div>
+          <table class="mock-table">
+            <thead><tr><th>서비스</th><th>비용</th><th>호출</th><th>Cache</th><th>모델</th></tr></thead>
+            <tr><td>TUTOR</td><td style="color:#58a6ff;">$324</td><td>12,480</td><td>52%</td><td>Claude-opus</td></tr>
+            <tr><td>CARD_GEN <span style="color:#d29922;font-size:6px;">v5.0</span></td><td>$187</td><td>3,420</td><td>41%</td><td>Claude-sonnet</td></tr>
+            <tr><td>GRADING</td><td>$142</td><td>4,250</td><td>38%</td><td>Claude-sonnet</td></tr>
+            <tr><td>QUIZ_GEN</td><td>$89</td><td>620</td><td>12%</td><td>Claude-opus</td></tr>
+            <tr><td>SUMMARY</td><td>$58</td><td>1,840</td><td>68%</td><td>Claude-haiku</td></tr>
+          </table>
+          <div style="margin-top:4px;padding:5px;background:rgba(248,113,113,.08);border-left:2px solid #f87171;font-size:7px;color:#f87171;">⚠️ user#4821: 일일 카드 생성 142회 (평균 4회) — 봇 의심 <span class="mock-btn mock-btn-warning" style="font-size:6px;margin-left:4px;" data-action="toast:Rate Limit 적용됨">Rate Limit</span></div>
+        </div>
+      </div>
+      <div class="sim-modal-overlay" id="kill-modal">
+        <div class="sim-modal">
+          <div class="sim-modal-title">⚠️ Kill-switch 활성화</div>
+          <div class="sim-modal-body">전체 AI 호출을 <strong>즉시 중단</strong>합니다.<br>모든 학습자의 튜터/채점이 일시 정지됩니다.</div>
+          <div class="sim-modal-actions"><span class="mock-btn mock-btn-outline" data-action="modal-close:">취소</span><span class="mock-btn mock-btn-danger" data-action="toast:Kill-switch 활성화 · 감사 로그 기록">활성화</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s26" open><summary class="panel-section-header">🎯 3층 Kill</summary><div class="panel-section-body"><table class="action-table"><tr><th>계층</th><th>조치</th></tr><tr><td>사용자별</td><td>월 한도 → 해당 계정만</td></tr><tr><td>플랜별</td><td>Free/Pro → 관리자 알림</td></tr><tr><td>전사</td><td>Hard limit → 전면 차단</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s26"><summary class="panel-section-header">📦 v5.0 지표</summary><div class="panel-section-body"><ul class="vm-tree"><li class="vm-node"><span class="vm-key">cost_per_note_embedding</span><span class="vm-type">&lt; $0.002</span></li><li class="vm-node"><span class="vm-key">cost_per_ai_card</span><span class="vm-type">&lt; $0.005</span></li><li class="vm-node"><span class="vm-key">note_cache_hit</span><span class="vm-type">&gt; 70%</span></li></ul></div></details>
+      <details class="panel-section" name="panel-s26"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#58a6ff;">ADMIN</span>Kill-switch 조작은 감사 로그 필수</div></div></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══ 26. 관리자 · Knowledge ═══ -->
+<section class="slide sb-slide" data-role="ROLE_ADMIN" data-id="26" data-set="admin" id="slide-27">
+  <header class="slide-header"><span class="header-title">관리자 | Knowledge 대시보드 (v5.0)</span><span class="header-screen-id">화면 26 ⭐ v5.0</span></header>
+  <div class="slide-badges">
+    <span class="badge badge-method"><span class="method-label method-get">GET</span>/admin/knowledge/stats</span>
+    <span class="badge badge-access">🔐 ADMIN</span>
+  </div>
+  <div class="slide-main">
+    <div class="slide-mockup">
+      <div class="mock-browser">
+        <div class="mock-browser-bar"><div class="mock-browser-dots"><span></span><span></span><span></span></div><div class="mock-browser-url">/admin/knowledge</div></div>
+        <div class="mock-browser-body">
+          <div class="mock-navbar"><span class="mock-navbar-brand">Admin</span><div class="mock-navbar-links"><span data-action="goto:slide-25">AI 품질</span><span data-action="goto:slide-26">FinOps</span><span class="active">Knowledge</span></div></div>
+          <div style="font-size:8px;color:var(--color-text-bright);font-weight:700;margin:3px 0;">📇 Flashcard Operations</div>
+          <div class="dash-grid">
+            <div class="dash-card"><div class="dash-card-title">일간 복습</div><div class="dash-card-value">48,231</div><div class="dash-card-trend dash-trend-up">▲ 12%</div></div>
+            <div class="dash-card"><div class="dash-card-title">복습 완료율</div><div class="dash-card-value">72%</div><div class="dash-card-trend" style="color:#3fb950;">목표 70%+ ✓</div></div>
+            <div class="dash-card"><div class="dash-card-title">평균 EF</div><div class="dash-card-value">2.41</div><div class="dash-card-trend" style="color:#58a6ff;">정상 범위</div></div>
+            <div class="dash-card"><div class="dash-card-title">leech 비율</div><div class="dash-card-value" style="color:#d29922;">2.8%</div><div class="dash-card-trend" style="color:#3fb950;">&lt; 5% ✓</div></div>
+          </div>
+          <div style="font-size:8px;color:var(--color-text-bright);font-weight:700;margin:4px 0 3px;">📓 Knowledge Notes</div>
+          <div class="dash-grid">
+            <div class="dash-card"><div class="dash-card-title">MAU당 노트</div><div class="dash-card-value">24.7</div><div class="dash-card-trend dash-trend-up">▲ 목표 20+</div></div>
+            <div class="dash-card"><div class="dash-card-title">위키링크 해결률</div><div class="dash-card-value" style="color:#3fb950;">94%</div><div class="dash-card-trend" style="color:#58a6ff;">미해결 6% 배치</div></div>
+            <div class="dash-card"><div class="dash-card-title">그래프 캐시 p95</div><div class="dash-card-value">412ms</div><div class="dash-card-trend dash-trend-up">▼ 500ms 미만</div></div>
+            <div class="dash-card"><div class="dash-card-title">임베딩 캐시</div><div class="dash-card-value">73%</div><div class="dash-card-trend" style="color:#3fb950;">목표 70%+ ✓</div></div>
+          </div>
+          <div style="margin-top:4px;padding:5px;background:rgba(63,185,80,.08);border-left:2px solid #3fb950;border-radius:3px;">
+            <div style="font-size:8px;color:#3fb950;font-weight:700;">🔄 Cross-Module Synergy (플라이휠)</div>
+            <div style="font-size:7px;color:var(--color-text-dim);margin-top:2px;line-height:1.6;">· 튜터 응답 중 <strong>노트 참조율 38%</strong> (opt-in)<br>· 노트 보유자 mastery 향상 속도 <strong>+22%</strong><br>· 노트 기반 카드: 전체의 <strong>64%</strong></div>
+          </div>
+          <div style="margin-top:4px;font-size:7px;color:#f87171;">⚠️ 알람: note_embeddings 중복률 84% 시점 2건 <span style="color:#58a6ff;cursor:pointer;" data-action="toast:대상 사용자 목록 노출">[조사]</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="slide-panel">
+      <details class="panel-section" name="panel-s27" open><summary class="panel-section-header">🎯 액션</summary><div class="panel-section-body"><table class="action-table"><tr><td>통계 조회</td><td><span class="method-badge get">GET</span> <code>/knowledge/stats</code></td><td>SRS + Notes + Synergy</td></tr><tr><td>이상 조사</td><td><span class="method-badge get">GET</span> <code>/anomalies</code></td><td>중복률/공유 의심</td></tr></table></div></details>
+      <details class="panel-section" name="panel-s27"><summary class="panel-section-header">📦 알람 규칙</summary><div class="panel-section-body"><div style="font-size:9px;line-height:1.7;">· 그래프 캐시 실패율 &gt; 5%<br>· 카드 생성 비용 한도 도달<br>· note_embeddings 중복률 &gt; 80%<br>· RLS 위반 → SEV-1</div></div></details>
+      <details class="panel-section" name="panel-s27"><summary class="panel-section-header">🔐 권한</summary><div class="panel-section-body"><div class="perm-row"><span class="perm-badge" style="background:#58a6ff;">ADMIN</span>PII 마스킹된 집계만</div></div></details>
+    </aside>
+  </div>
+</section>
+
+</div>
+</div>
+
+<!-- ═══ 오버레이 ═══ -->
+<div class="sim-mode-badge">🎮 인터랙티브 · 클릭으로 화면 이동</div>
+
+<div class="role-filter">
+  <button class="role-filter-btn active" data-filter="ALL">전체</button>
+  <button class="role-filter-btn" data-filter="ROLE_LEARNER" style="border-color:#3fb950;color:#3fb950;">LEARNER</button>
+  <button class="role-filter-btn" data-filter="ROLE_INSTRUCTOR" style="border-color:#f59e0b;color:#f59e0b;">INSTRUCTOR</button>
+  <button class="role-filter-btn" data-filter="ROLE_ADMIN" style="border-color:#58a6ff;color:#58a6ff;">ADMIN</button>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="slide-counter"><span id="counterCurrent">1</span> / <span id="counterTotal">27</span></div>
+
+<div class="toc-overlay" id="toc-overlay"></div>
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-title">목차</div>
+  <ul id="toc-list"></ul>
+</nav>
+
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-box">
+    <h2>키보드 단축키</h2>
+    <div class="help-row"><span>이전 / 다음</span><span><span class="help-key">←</span> <span class="help-key">→</span></span></div>
+    <div class="help-row"><span>처음 / 끝</span><span><span class="help-key">Home</span> <span class="help-key">End</span></span></div>
+    <div class="help-row"><span>다음 / 이전 세트</span><span><span class="help-key">Tab</span> <span class="help-key">Shift+Tab</span></span></div>
+    <div class="help-row"><span>목차 토글</span><span><span class="help-key">T</span></span></div>
+    <div class="help-row"><span>풀스크린</span><span><span class="help-key">F</span></span></div>
+    <div class="help-row"><span>도움말</span><span><span class="help-key">?</span></span></div>
+    <div class="help-row"><span>닫기</span><span><span class="help-key">Esc</span></span></div>
+    <p style="text-align:center;margin-top:16px;font-size:11px;color:var(--color-text-dim);">아무 키나 눌러 닫기</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  let allSlides=[];let filtered=[];let currentIdx=0;let isAnimating=false;let currentRole="ALL";
+  const slidesContainer=document.querySelector(".slides");
+  const progressFill=document.getElementById("progressFill");
+  const counterCurrent=document.getElementById("counterCurrent");
+  const counterTotal=document.getElementById("counterTotal");
+  const helpOverlay=document.getElementById("helpOverlay");
+  const tocSidebar=document.getElementById("toc-sidebar");
+  const tocOverlay=document.getElementById("toc-overlay");
+  const tocList=document.getElementById("toc-list");
+
+  function init(){buildSlideIndex();applyRoleFilter("ALL");fitSlides();window.addEventListener("resize",fitSlides);parseHash();}
+  function buildSlideIndex(){allSlides=Array.from(document.querySelectorAll(".slide"));}
+  function fitSlides(){const vw=window.innerWidth;const vh=window.innerHeight;const scale=Math.min(vw/960,vh/540,1.5);slidesContainer.style.setProperty("--slide-scale",scale);}
+  function applyRoleFilter(role){currentRole=role;filtered=role==="ALL"?allSlides:allSlides.filter(el=>el.dataset.role===role||el.dataset.role==="ALL");allSlides.forEach(el=>el.classList.remove("active"));currentIdx=0;if(filtered.length>0)filtered[0].classList.add("active");updateProgress();updateTOCPanel();setHashState(role,filtered[0]?.dataset.id||"00");document.querySelectorAll(".role-filter-btn").forEach(btn=>{btn.classList.toggle("active",btn.dataset.filter===role);});}
+  function showSlide(index){if(isAnimating)return;if(index<0||index>=filtered.length)return;if(index===currentIdx)return;isAnimating=true;filtered[currentIdx].classList.remove("active");currentIdx=index;filtered[currentIdx].classList.add("active");updateProgress();setHashState(currentRole,filtered[currentIdx].dataset.id);const slide=filtered[currentIdx];slide.addEventListener("transitionend",function h(){slide.removeEventListener("transitionend",h);isAnimating=false;});setTimeout(()=>{isAnimating=false;},600);}
+  function updateProgress(){const total=filtered.length;const pct=total>1?(currentIdx/(total-1))*100:100;progressFill.style.width=pct+"%";counterCurrent.textContent=currentIdx+1;counterTotal.textContent=total;}
+  function getHashState(){const raw=location.hash.replace(/^#/,"");const p=new URLSearchParams(raw);return{role:p.get("role")||"ALL",slide:p.get("slide")||"00"};}
+  function setHashState(role,slideId){const p=new URLSearchParams();p.set("role",role);p.set("slide",slideId);history.replaceState(null,"","#"+p.toString());}
+  function parseHash(){const s=getHashState();if(s.role!==currentRole)applyRoleFilter(s.role);const idx=filtered.findIndex(el=>el.dataset.id===s.slide);if(idx>=0&&idx!==currentIdx){filtered[currentIdx].classList.remove("active");currentIdx=idx;filtered[currentIdx].classList.add("active");updateProgress();}}
+  function nextSet(){const cs=filtered[currentIdx]?.dataset.set;const idx=filtered.findIndex((el,i)=>i>currentIdx&&el.dataset.set!==cs);if(idx>=0)showSlide(idx);}
+  function prevSet(){const cs=filtered[currentIdx]?.dataset.set;for(let i=currentIdx-1;i>=0;i--){if(filtered[i].dataset.set!==cs){const sn=filtered[i].dataset.set;const first=filtered.findIndex(el=>el.dataset.set===sn);showSlide(first);return;}}}
+  function toggleTOC(){const o=tocSidebar.classList.contains("toc-open");tocSidebar.classList.toggle("toc-open",!o);tocOverlay.classList.toggle("visible",!o);}
+  function updateTOCPanel(){tocList.innerHTML="";let lastSet=null;filtered.forEach((el,idx)=>{const id=el.dataset.id;const set=el.dataset.set||"";const role=el.dataset.role||"";if(set&&set!==lastSet){const h=document.createElement("li");h.className="toc-set-header";h.textContent=set.replace(/-/g," ").toUpperCase();tocList.appendChild(h);lastSet=set;}const title=el.querySelector(".header-title")?.textContent||el.querySelector("h1")?.textContent||el.querySelector("h2")?.textContent||`슬라이드 ${id}`;const item=document.createElement("li");item.className=idx===currentIdx?"toc-item active":"toc-item";item.innerHTML=`<span>#${id}</span> <span style="flex:1;font-size:10px;">${title}</span>`;if(role!=="ALL"){item.innerHTML+=`<span class="toc-role-badge">${role.replace("ROLE_","")}</span>`;}item.addEventListener("click",()=>{showSlide(idx);toggleTOC();});tocList.appendChild(item);});}
+  tocOverlay.addEventListener("click",toggleTOC);
+  function toggleFullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}else{document.exitFullscreen();}}
+  function toggleHelp(){helpOverlay.classList.toggle("show");}
+
+  document.addEventListener("keydown",e=>{if(e.target.matches("input, textarea, select"))return;if(helpOverlay.classList.contains("show")){helpOverlay.classList.remove("show");e.preventDefault();return;}switch(e.key){case"ArrowRight":case" ":case"PageDown":e.preventDefault();showSlide(currentIdx+1);break;case"ArrowLeft":case"PageUp":e.preventDefault();showSlide(currentIdx-1);break;case"Home":e.preventDefault();showSlide(0);break;case"End":e.preventDefault();showSlide(filtered.length-1);break;case"Tab":e.preventDefault();e.shiftKey?prevSet():nextSet();break;case"t":case"T":e.preventDefault();toggleTOC();break;case"f":case"F":e.preventDefault();toggleFullscreen();break;case"?":e.preventDefault();toggleHelp();break;case"Escape":if(tocSidebar.classList.contains("toc-open"))toggleTOC();else if(document.fullscreenElement)document.exitFullscreen();break;}});
+  let pointerStartX=0;document.addEventListener("pointerdown",e=>{pointerStartX=e.clientX;});document.addEventListener("pointerup",e=>{const dx=e.clientX-pointerStartX;if(Math.abs(dx)>50){dx<0?showSlide(currentIdx+1):showSlide(currentIdx-1);}});
+  document.querySelectorAll(".role-filter-btn").forEach(btn=>{btn.addEventListener("click",()=>applyRoleFilter(btn.dataset.filter));});
+  window.addEventListener("hashchange",parseHash);
+
+  // ═══ 인터랙티브 엔진 ═══
+  const toastContainer=document.createElement("div");toastContainer.className="sim-toast-container";slidesContainer.appendChild(toastContainer);
+  slidesContainer.addEventListener("click",e=>{const a=e.target.closest("[data-action]");if(!a)return;const action=a.dataset.action;if(!action)return;e.stopPropagation();const colonIdx=action.indexOf(":");const type=colonIdx>=0?action.slice(0,colonIdx):action;const value=colonIdx>=0?action.slice(colonIdx+1):"";switch(type){case"goto":{const t=document.getElementById(value);if(!t)return;const i=filtered.indexOf(t);if(i>=0)showSlide(i);else{if(!allSlides.includes(t))return;applyRoleFilter("ALL");const i2=filtered.indexOf(t);if(i2>=0)showSlide(i2);}break;}case"modal":{const m=document.getElementById(value);if(m)m.classList.add("sim-show");break;}case"modal-close":{const o=a.closest(".sim-modal-overlay");if(o)o.classList.remove("sim-show");break;}case"toast":showSimToast(value,false);break;case"toast-error":showSimToast(value,true);break;case"toggle":{const t=document.getElementById(value);if(t)t.classList.toggle("sim-show");break;}case"tab":{const g=a.closest(".sim-tabs");if(!g)return;g.querySelectorAll(".sim-tab").forEach(t=>t.classList.remove("sim-tab-active"));a.classList.add("sim-tab-active");const pc=g.parentElement;pc.querySelectorAll(".sim-tab-panel").forEach(p=>p.classList.remove("sim-tab-active"));const p=pc.querySelector("#"+value);if(p)p.classList.add("sim-tab-active");break;}}});
+  document.querySelectorAll(".sim-modal-overlay").forEach(o=>{o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("sim-show");});});
+  function showSimToast(msg,err){const t=document.createElement("div");t.className="sim-toast"+(err?" sim-toast-error":"");t.textContent=msg;toastContainer.appendChild(t);setTimeout(()=>t.remove(),2500);}
+  slidesContainer.addEventListener("focusout",e=>{if(!e.target.matches(".sim-input[required], .sim-textarea[required]"))return;const i=e.target;if(i.value.trim()===""){i.classList.add("sim-invalid");}else{i.classList.remove("sim-invalid");}});
+  slidesContainer.addEventListener("input",e=>{if(!e.target.matches(".sim-input, .sim-textarea"))return;if(e.target.value.trim()!==""){e.target.classList.remove("sim-invalid");}});
+
+  init();
+})();
+</script>
+</body>
+</html>
+

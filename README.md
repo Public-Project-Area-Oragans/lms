@@ -4,7 +4,8 @@ AI 기반 적응형 학습 관리 시스템 + 개인 학습 인프라.
 
 ## 🔗 링크
 
-- 🎮 **인터랙티브 스토리보드**: https://public-project-area-oragans.github.io/lms/storyboard.html
+- 🎮 **인터랙티브 스토리보드**: https://public-project-area-oragans.github.io/lms/storyboard/storyboard.html
+  - 배포 브랜치: [`doc/storyboard`](https://github.com/Public-Project-Area-Oragans/lms/tree/doc/storyboard)
 - 📖 **문서 Wiki**: https://github.com/Public-Project-Area-Oragans/lms/wiki
 
 ## 📦 구성
@@ -24,14 +25,19 @@ AI 기반 적응형 학습 관리 시스템 + 개인 학습 인프라.
 **Frontend**: React 18 · TypeScript · Flutter 3.x · Tailwind
 **Infra**: Docker · Kubernetes · Prometheus + Grafana · OTel
 
-## 📑 문서 구조
+## 📑 문서 및 브랜치 구성
 
-`docs/`는 GitHub Pages 배포용 정적 자산을 담습니다. 개발 문서 원본은 Wiki에서 관리됩니다.
+| 위치 | 역할 |
+|------|------|
+| `main` (이 브랜치) | 실제 애플리케이션 코드 |
+| [`doc/storyboard`](https://github.com/Public-Project-Area-Oragans/lms/tree/doc/storyboard) | GitHub Pages 정적 배포 (스토리보드 HTML) |
+| [Wiki](https://github.com/Public-Project-Area-Oragans/lms/wiki) | 기획/설계/운영 문서 17종 |
 
 ```
-docs/
-├── index.html       # Pages 랜딩 (storyboard로 자동 이동)
-└── storyboard.html  # 인터랙티브 화면 스토리보드 (27 화면)
+doc/storyboard 브랜치:
+└── storyboard/
+    ├── index.html       # Pages 랜딩 (storyboard.html로 자동 이동)
+    └── storyboard.html  # 인터랙티브 화면 스토리보드 (27 화면)
 ```
 
 ## 🗓 마일스톤
